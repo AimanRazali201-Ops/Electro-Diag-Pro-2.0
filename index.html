@@ -1,154 +1,626 @@
 <!DOCTYPE html>
-<html lang="en" class="dark">
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Type-C ElectroDiag Pro — LAB BENCH v5.0</title>
-    <script src="https://tailwindcss.com"></script>
-    <style>
-        body {
-            background-color: #090d16;
-            background-image:
-                radial-gradient(circle at 12% 8%, rgba(0, 240, 255, 0.08) 0%, transparent 42%),
-                linear-gradient(to right, rgba(30, 41, 59, 0.28) 1px, transparent 1px),
-                linear-gradient(to bottom, rgba(30, 41, 59, 0.28) 1px, transparent 1px);
-            background-size: 100% 100%, 32px 32px, 32px 32px;
-            color: #e2e8f0;
-            font-family: system-ui, -apple-system, sans-serif;
-        }
-        .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
-        input[type="range"] { -webkit-appearance: none; appearance: none; background: transparent; cursor: pointer; }
-        input[type="range"]::-webkit-slider-runnable-track { height: 6px; border-radius: 999px; background: #1e293b; }
-        input[type="range"]::-webkit-slider-thumb {
-            -webkit-appearance: none; appearance: none; height: 18px; width: 18px; border-radius: 50%;
-            background: #00f0ff; border: 2px solid #090d16; margin-top: -6px;
-            box-shadow: 0 0 10px rgba(0, 240, 255, 0.65);
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Type-C ElectroDiag Pro — LAB BENCH v4.3</title>
+  <style>
+    :root {
+      --bg-dark: #090d14;
+      --panel-bg: #111824;
+      --panel-border: #1e293b;
+      --grid-line: rgba(56, 189, 248, 0.06);
+      --accent-cyan: #00e5ff;
+      --accent-green: #10b981;
+      --accent-amber: #f59e0b;
+      --accent-red: #ef4444;
+      --text-main: #f1f5f9;
+      --text-muted: #94a3b8;
+      --font-mono: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      background-image: 
+        linear-gradient(to right, var(--grid-line) 1px, transparent 1px),
+        linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px);
+      background-size: 28px 28px;
+      color: var(--text-main);
+      font-family: var(--font-sans);
+      min-height: 100vh;
+      padding: 24px;
+      line-height: 1.5;
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    /* Header */
+    header {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--panel-border);
+      margin-bottom: 24px;
+    }
+
+    .title-group h1 {
+      font-size: 1.6rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .badge {
+      background: rgba(0, 229, 255, 0.12);
+      color: var(--accent-cyan);
+      border: 1px solid rgba(0, 229, 255, 0.35);
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-weight: 600;
+    }
+
+    .subtitle {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      margin-top: 4px;
+    }
+
+    /* Toolbar Buttons */
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    button {
+      background: #172030;
+      color: var(--text-main);
+      border: 1px solid #2d3b52;
+      padding: 9px 14px;
+      border-radius: 6px;
+      font-family: var(--font-mono);
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    button:hover {
+      background: #1f2b40;
+      border-color: var(--accent-cyan);
+      color: #fff;
+    }
+
+    button:active {
+      transform: translateY(1px);
+    }
+
+    button.primary {
+      background: rgba(0, 229, 255, 0.15);
+      border-color: var(--accent-cyan);
+      color: var(--accent-cyan);
+    }
+
+    button.primary:hover {
+      background: rgba(0, 229, 255, 0.25);
+    }
+
+    button.active-tone {
+      background: rgba(16, 185, 129, 0.2);
+      border-color: var(--accent-green);
+      color: var(--accent-green);
+    }
+
+    /* Main Grid */
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    @media (max-width: 800px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .card {
+      background: var(--panel-bg);
+      border: 1px solid var(--panel-border);
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+    }
+
+    .card.full-width {
+      grid-column: 1 / -1;
+    }
+
+    .card h2 {
+      font-size: 0.95rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+      margin-bottom: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    /* Status Box */
+    .status-banner {
+      background: #0b1019;
+      border: 1px solid #1e293b;
+      border-left: 4px solid var(--text-muted);
+      padding: 14px 16px;
+      border-radius: 6px;
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+    }
+
+    .status-banner.ok { border-left-color: var(--accent-green); }
+    .status-banner.warn { border-left-color: var(--accent-amber); }
+    .status-banner.fault { border-left-color: var(--accent-red); }
+
+    .status-label {
+      font-weight: 700;
+      display: inline-block;
+      margin-bottom: 4px;
+      color: var(--accent-cyan);
+    }
+
+    .status-banner.ok .status-label { color: var(--accent-green); }
+    .status-banner.warn .status-label { color: var(--accent-amber); }
+    .status-banner.fault .status-label { color: var(--accent-red); }
+
+    .device-list {
+      margin-top: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .device-item {
+      background: #141d2b;
+      border: 1px solid #263449;
+      padding: 8px 12px;
+      border-radius: 5px;
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    /* Fault Scenario Buttons */
+    .scenario-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .scenario-btn {
+      flex-direction: column;
+      align-items: flex-start;
+      text-align: left;
+      padding: 12px;
+      gap: 4px;
+    }
+
+    .scenario-btn span.sub {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      font-weight: 400;
+    }
+
+    .scenario-btn.healthy:hover { border-color: var(--accent-green); }
+    .scenario-btn.short:hover { border-color: var(--accent-red); }
+    .scenario-btn.open:hover { border-color: var(--accent-amber); }
+
+    /* Telemetry Sliders & Readouts */
+    .telemetry-row {
+      margin-bottom: 18px;
+    }
+
+    .telemetry-header {
+      display: flex;
+      justify-content: space-between;
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      margin-bottom: 8px;
+    }
+
+    .telemetry-val {
+      color: var(--accent-cyan);
+      font-weight: 700;
+      font-size: 1rem;
+    }
+
+    input[type="range"] {
+      -webkit-appearance: none;
+      width: 100%;
+      height: 6px;
+      background: #1e293b;
+      border-radius: 4px;
+      outline: none;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: var(--accent-cyan);
+      cursor: pointer;
+      box-shadow: 0 0 10px rgba(0, 229, 255, 0.5);
+    }
+
+    .metrics-bar {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 1px solid var(--panel-border);
+      font-family: var(--font-mono);
+    }
+
+    .metric-box {
+      background: #0b1019;
+      padding: 10px;
+      border-radius: 6px;
+      border: 1px solid #1e293b;
+    }
+
+    .metric-box .label {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      display: block;
+    }
+
+    .metric-box .val {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    /* Diagnostic Log */
+    .log-box {
+      background: #070a10;
+      border: 1px solid #1e293b;
+      border-radius: 6px;
+      padding: 12px;
+      height: 130px;
+      overflow-y: auto;
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      color: #a5f3fc;
+    }
+
+    .log-entry {
+      margin-bottom: 4px;
+    }
+    .log-time {
+      color: #64748b;
+      margin-right: 8px;
+    }
+  </style>
 </head>
-<body class="min-h-screen flex flex-col">
+<body>
+  <div class="container">
+    <header>
+      <div class="title-group">
+        <h1>Type-C ElectroDiag Pro <span class="badge">LAB BENCH v4.3</span></h1>
+        <div class="subtitle">Multi-Protocol Type-C Instrument & Hardware Analyzer</div>
+      </div>
 
-    <div id="toastContainer" class="fixed bottom-4 right-4 z-50 flex flex-col gap-2 max-w-sm w-full pointer-events-none px-4"></div>
-
-    <!-- Header -->
-    <header class="sticky top-0 z-30 bg-[#090d16]/95 border-b border-slate-800 px-4 py-3.5">
-        <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3">
-            <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-xl bg-cyan-500/10 border border-[#00f0ff]/40 flex items-center justify-center text-[#00f0ff] font-bold mono">
-                    USB-C
-                </div>
-                <div>
-                    <div class="flex items-center gap-2">
-                        <h1 class="text-lg font-extrabold text-white">Type-C <span class="text-[#00f0ff]">ElectroDiag</span> Pro</h1>
-                        <span class="px-2 py-0.5 rounded text-[10px] mono font-bold bg-cyan-950 text-[#00f0ff] border border-cyan-700">v5.0 WORKING</span>
-                    </div>
-                    <p id="detectedDeviceBanner" class="text-xs text-slate-400">Ready — Plug Type-C cable to instrument &amp; click Detect</p>
-                </div>
-            </div>
-
-            <div class="flex flex-wrap items-center gap-2">
-                <button id="btnDetect" type="button"
-                    class="px-4 py-2.5 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-400/50 text-emerald-300 text-xs font-bold cursor-pointer flex items-center gap-2">
-                    <span id="midiStatusDot" class="w-2.5 h-2.5 rounded-full bg-slate-500"></span>
-                    <span>Detect Instrument</span>
-                </button>
-
-                <button id="btnSerial" type="button"
-                    class="px-3.5 py-2.5 rounded-xl bg-[#111827] hover:bg-slate-800 border border-slate-700 text-slate-200 text-xs font-semibold cursor-pointer">
-                    WebSerial
-                </button>
-
-                <button id="btnUsb" type="button"
-                    class="px-3.5 py-2.5 rounded-xl bg-[#111827] hover:bg-slate-800 border border-slate-700 text-slate-200 text-xs font-semibold cursor-pointer">
-                    WebUSB
-                </button>
-            </div>
-        </div>
+      <div class="toolbar">
+        <button id="btn-tone">🔊 Test Tone (440Hz)</button>
+        <button id="btn-detect" class="primary">🎹 Detect Instrument (MIDI / Audio)</button>
+        <button id="btn-serial">🔌 WebSerial</button>
+        <button id="btn-usb">⚡ WebUSB</button>
+      </div>
     </header>
 
-    <!-- Main Grid -->
-    <main class="flex-1 max-w-7xl w-full mx-auto px-4 py-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
+    <div class="grid">
+      <!-- USB-C Instrument Link -->
+      <section class="card full-width">
+        <h2>USB-C Instrument Link</h2>
+        <div id="link-banner" class="status-banner">
+          <div id="link-status" class="status-label">STANDBY</div>
+          <div id="link-desc">Click <strong>Detect Instrument (MIDI / Audio)</strong> after plugging in your Type-C cable.</div>
+        </div>
+        <div id="device-list" class="device-list"></div>
+      </section>
 
-        <!-- Left Controls -->
-        <section class="lg:col-span-4 flex flex-col gap-5">
-            <div class="bg-[#111827] border border-slate-800 rounded-2xl p-5">
-                <div class="flex items-center justify-between mb-2">
-                    <h2 class="text-xs mono uppercase text-slate-400 font-bold">USB-C Instrument Status</h2>
-                    <span id="usbLinkBadge" class="px-2 py-0.5 rounded text-[10px] mono font-bold bg-slate-800 text-slate-400">WAITING</span>
-                </div>
-                <div id="instrumentInfoBox" class="p-3.5 rounded-xl bg-[#090d16] border border-slate-800 mono text-xs text-slate-300">
-                    Click the green <b class="text-emerald-400">Detect Instrument</b> button at the top right to scan your USB-C port.
-                </div>
-            </div>
+      <!-- Bench Fault Scenarios -->
+      <section class="card">
+        <h2>
+          Bench Fault Scenarios
+          <button id="btn-reset" style="padding: 4px 10px; font-size: 0.75rem;">Reset</button>
+        </h2>
+        <div class="scenario-grid">
+          <button class="scenario-btn healthy" data-v="20.0" data-a="3.00" data-cc="CC1: 5.1kΩ Rd (PD 3.0)" data-dp="D+/D-: Enumerated HS" data-state="ok" data-msg="Nominal 20V USB-PD contract established.">
+            <span>Healthy 20V PD</span>
+            <span class="sub">20.0V / 3.00A</span>
+          </button>
 
-            <div class="bg-[#111827] border border-slate-800 rounded-2xl p-5">
-                <h2 class="text-xs mono uppercase text-slate-400 font-bold mb-3">Quick Test Scenarios</h2>
-                <div class="grid grid-cols-2 gap-2">
-                    <button type="button" onclick="applyPreset('ok')" class="p-2.5 rounded-xl bg-[#0c1220] hover:bg-slate-800 border border-slate-700 text-left cursor-pointer">
-                        <div class="text-xs font-bold text-emerald-400">Healthy 20V PD</div>
-                        <div class="text-[11px] mono text-slate-400">20.0V / 3.00A</div>
-                    </button>
-                    <button type="button" onclick="applyPreset('short')" class="p-2.5 rounded-xl bg-[#0c1220] hover:bg-slate-800 border border-slate-700 text-left cursor-pointer">
-                        <div class="text-xs font-bold text-rose-400">VBUS Short</div>
-                        <div class="text-[11px] mono text-slate-400">0.4V / 4.85A</div>
-                    </button>
-                    <button type="button" onclick="applyPreset('cc')" class="p-2.5 rounded-xl bg-[#0c1220] hover:bg-slate-800 border border-slate-700 text-left cursor-pointer">
-                        <div class="text-xs font-bold text-amber-400">CC1 Open</div>
-                        <div class="text-[11px] mono text-slate-400">0.0V / No PD</div>
-                    </button>
-                    <button type="button" onclick="applyPreset('data')" class="p-2.5 rounded-xl bg-[#0c1220] hover:bg-slate-800 border border-slate-700 text-left cursor-pointer">
-                        <div class="text-xs font-bold text-rose-400">D+/D- Short</div>
-                        <div class="text-[11px] mono text-slate-400">Diode 0.08V</div>
-                    </button>
-                </div>
-            </div>
+          <button class="scenario-btn short" data-v="0.4" data-a="4.85" data-cc="CC1: Overcurrent Trip" data-dp="D+/D-: Pulled Low" data-state="fault" data-msg="CRITICAL: VBUS short-to-GND detected. OCP protection active.">
+            <span>VBUS Short-to-GND</span>
+            <span class="sub">0.4V / 4.85A</span>
+          </button>
 
-            <div class="bg-[#111827] border border-slate-800 rounded-2xl p-5 flex flex-col gap-4">
-                <h2 class="text-xs mono uppercase text-slate-400 font-bold">Manual Probe Sliders</h2>
-                <div>
-                    <div class="flex justify-between text-xs mb-1"><span>VBUS Voltage</span><span id="valVbus" class="mono font-bold text-[#00f0ff]">5.0 V</span></div>
-                    <input id="sliderVbus" type="range" min="0" max="28" step="0.1" value="5.0" oninput="updateDiagnostics()" class="w-full">
-                </div>
-                <div>
-                    <div class="flex justify-between text-xs mb-1"><span>Current Draw</span><span id="valCurrent" class="mono font-bold text-[#00f0ff]">0.35 A</span></div>
-                    <input id="sliderCurrent" type="range" min="0" max="5" step="0.05" value="0.35" oninput="updateDiagnostics()" class="w-full">
-                </div>
-                <div>
-                    <div class="flex justify-between text-xs mb-1"><span>CC1 Pin</span><span id="valCc1" class="mono font-bold text-[#00f0ff]">1.65 V</span></div>
-                    <input id="sliderCc1" type="range" min="0" max="3.3" step="0.05" value="1.65" oninput="updateDiagnostics()" class="w-full">
-                </div>
-                <div>
-                    <div class="flex justify-between text-xs mb-1"><span>D+/D- Diode Drop</span><span id="valDataDiode" class="mono font-bold text-[#00f0ff]">0.62 V</span></div>
-                    <input id="sliderDataDiode" type="range" min="0" max="1.5" step="0.01" value="0.62" oninput="updateDiagnostics()" class="w-full">
-                </div>
-            </div>
-        </section>
+          <button class="scenario-btn open" data-v="0.0" data-a="0.00" data-cc="CC1: Open / High-Z" data-dp="D+/D-: Floating" data-state="warn" data-msg="CC1 configuration channel open. No PD negotiation possible.">
+            <span>CC1 Line Open</span>
+            <span class="sub">0.0V / No PD</span>
+          </button>
 
-        <!-- Right Dashboard -->
-        <section class="lg:col-span-8 flex flex-col gap-5">
-            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                <div class="bg-[#111827] border border-slate-800 rounded-2xl p-4">
-                    <div class="text-[11px] mono text-slate-400">POWER</div>
-                    <div id="kpiPower" class="text-2xl mono font-bold text-white mt-1">1.8 W</div>
-                </div>
-                <div class="bg-[#111827] border border-slate-800 rounded-2xl p-4">
-                    <div class="text-[11px] mono text-slate-400">USB DATA LINK</div>
-                    <div id="kpiDataBus" class="text-2xl mono font-bold text-white mt-1">IDLE</div>
-                </div>
-                <div class="bg-[#111827] border border-slate-800 rounded-2xl p-4">
-                    <div class="text-[11px] mono text-slate-400">REPAIR SCORE</div>
-                    <div id="kpiRepairScore" class="text-2xl mono font-bold text-[#00f0ff] mt-1">100 / 100</div>
-                </div>
-                <div class="bg-[#111827] border border-slate-800 rounded-2xl p-4">
-                    <div class="text-[11px] mono text-slate-400">VERDICT</div>
-                    <div id="kpiStatus" class="text-2xl mono font-bold text-emerald-400 mt-1">PASS</div>
-                </div>
-            </div>
+          <button class="scenario-btn open" data-v="5.0" data-a="0.12" data-cc="CC1: 5V Legacy Fallback" data-dp="D+/D-: 0.08V Diode Leak" data-state="fault" data-msg="ESD protection diode leakage on D+/D- data lines (0.08V). USB enumeration failed.">
+            <span>D+ / D- ESD Leak</span>
+            <span class="sub">Diode 0.08V</span>
+          </button>
+        </div>
+      </section>
 
-            <div class="bg-[#111827] border border-slate-800 rounded-2xl p-5">
-                <h3 class="text-xs mono uppercase text-slate-400 font-bold mb-3">Fault Diagnosis &amp; Action Plan</h3>
-                <div id="diagnosisList" class="text-xs"></div>
-            </div>
+      <!-- Precision Probe Telemetry -->
+      <section class="card">
+        <h2>Precision Probe Telemetry</h2>
 
-            <div class="bg-[#111827] border border-slate-800 rounded-2xl p-5">
-                <div class="flex items-center justify-between mb-3">
+        <div class="telemetry-row">
+          <div class="telemetry-header">
+            <label for="slider-vbus">VBUS Rail Voltage</label>
+            <span id="val-vbus" class="telemetry-val">20.0 V</span>
+          </div>
+          <input type="range" id="slider-vbus" min="0" max="24" step="0.1" value="20.0" />
+        </div>
+
+        <div class="telemetry-row">
+          <div class="telemetry-header">
+            <label for="slider-curr">VBUS Current Draw</label>
+            <span id="val-curr" class="telemetry-val">3.00 A</span>
+          </div>
+          <input type="range" id="slider-curr" min="0" max="5" step="0.05" value="3.00" />
+        </div>
+
+        <div class="metrics-bar">
+          <div class="metric-box">
+            <span class="label">POWER (W)</span>
+            <span id="val-watts" class="val">60.0 W</span>
+          </div>
+          <div class="metric-box">
+            <span class="label">CC LINE</span>
+            <span id="val-cc" class="val" style="font-size:0.78rem;">CC1: 5.1kΩ Rd</span>
+          </div>
+          <div class="metric-box">
+            <span class="label">DATA LINES</span>
+            <span id="val-dp" class="val" style="font-size:0.78rem;">D+/D-: OK</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Console Log -->
+      <section class="card full-width">
+        <h2>Protocol & Diagnostic Console</h2>
+        <div id="console-log" class="log-box"></div>
+      </section>
+    </div>
+  </div>
+
+  <script>
+    // --- Logger Utility ---
+    const logBox = document.getElementById('console-log');
+    function log(msg) {
+      const now = new Date().toLocaleTimeString('en-GB', { hour12: false });
+      const line = document.createElement('div');
+      line.className = 'log-entry';
+      line.innerHTML = `<span class="log-time">[${now}]</span>${msg}`;
+      logBox.appendChild(line);
+      logBox.scrollTop = logBox.scrollHeight;
+    }
+
+    log('ElectroDiag Pro LAB BENCH v4.3 initialized.');
+
+    // --- 1. Audio Test Tone Generator (Web Audio API) ---
+    let audioCtx = null;
+    let osc = null;
+    const btnTone = document.getElementById('btn-tone');
+
+    btnTone.addEventListener('click', () => {
+      if (!osc) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(440, audioCtx.currentTime);
+        gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+
+        btnTone.textContent = '⏹ Stop Tone';
+        btnTone.classList.add('active-tone');
+        log('Audio output test: 440Hz sine wave active.');
+      } else {
+        osc.stop();
+        osc.disconnect();
+        osc = null;
+        btnTone.textContent = '🔊 Test Tone (440Hz)';
+        btnTone.classList.remove('active-tone');
+        log('Audio output test stopped.');
+      }
+    });
+
+    // --- 2. Detect Instrument (WebMIDI + USB Audio Devices) ---
+    const btnDetect = document.getElementById('btn-detect');
+    const linkBanner = document.getElementById('link-banner');
+    const linkStatus = document.getElementById('link-status');
+    const linkDesc = document.getElementById('link-desc');
+    const deviceList = document.getElementById('device-list');
+
+    function setBanner(state, title, desc) {
+      linkBanner.className = `status-banner ${state}`;
+      linkStatus.textContent = title;
+      linkDesc.innerHTML = desc;
+    }
+
+    btnDetect.addEventListener('click', async () => {
+      deviceList.innerHTML = '';
+      let foundCount = 0;
+      log('Scanning USB-C bus for MIDI and Audio interfaces...');
+
+      // Scan WebMIDI
+      if (navigator.requestMIDIAccess) {
+        try {
+          const midi = await navigator.requestMIDIAccess({ sysex: false });
+          midi.inputs.forEach((input) => {
+            foundCount++;
+            addDeviceCard('MIDI IN', `${input.manufacturer || 'Generic'} ${input.name}`, input.state);
+            log(`MIDI Input detected: ${input.name}`);
+          });
+          midi.outputs.forEach((output) => {
+            foundCount++;
+            addDeviceCard('MIDI OUT', `${output.manufacturer || 'Generic'} ${output.name}`, output.state);
+          });
+        } catch (err) {
+          log(`WebMIDI permission/error: ${err.message}`);
+        }
+      } else {
+        log('WebMIDI API not supported in this browser.');
+      }
+
+      // Scan Audio Interfaces (Web Audio / MediaDevices)
+      if (navigator.mediaDevices && navigator.mediaDevices.enumerateDevices) {
+        try {
+          // Request brief mic permission so device labels are unlocked
+          const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+          stream.getTracks().forEach(t => t.stop());
+
+          const devices = await navigator.mediaDevices.enumerateDevices();
+          devices.filter(d => d.kind === 'audioinput' || d.kind === 'audiooutput').forEach(dev => {
+            if (dev.label && !dev.label.toLowerCase().includes('default')) {
+              foundCount++;
+              const type = dev.kind === 'audioinput' ? 'AUDIO IN' : 'AUDIO OUT';
+              addDeviceCard(type, dev.label, 'connected');
+              log(`${type} detected: ${dev.label}`);
+            }
+          });
+        } catch (err) {
+          log(`Audio enumeration note: ${err.message}`);
+        }
+      }
+
+      if (foundCount > 0) {
+        setBanner('ok', 'LINK ESTABLISHED', `Detected ${foundCount} active instrument/audio endpoint(s).`);
+      } else {
+        setBanner('warn', 'NO INSTRUMENT FOUND', 'Ensure your Type-C device is powered on, data-capable (not charge-only), and browser permissions are allowed.');
+        log('Scan complete: 0 external instruments found.');
+      }
+    });
+
+    function addDeviceCard(protocol, name, status) {
+      const div = document.createElement('div');
+      div.className = 'device-item';
+      div.innerHTML = `<span><strong>[${protocol}]</strong> ${name}</span><span style="color:var(--accent-green)">${status.toUpperCase()}</span>`;
+      deviceList.appendChild(div);
+    }
+
+    // --- 3. WebSerial & WebUSB Handlers ---
+    document.getElementById('btn-serial').addEventListener('click', async () => {
+      if (!('serial' in navigator)) {
+        log('ERROR: WebSerial not supported in this browser.');
+        return;
+      }
+      try {
+        const port = await navigator.serial.requestPort();
+        await port.open({ baudRate: 115200 });
+        setBanner('ok', 'WEBSERIAL CONNECTED', 'Serial telemetry port opened at 115200 baud.');
+        log('WebSerial port connected (115200 baud).');
+      } catch (err) {
+        log(`WebSerial cancelled/failed: ${err.message}`);
+      }
+    });
+
+    document.getElementById('btn-usb').addEventListener('click', async () => {
+      if (!('usb' in navigator)) {
+        log('ERROR: WebUSB not supported in this browser.');
+        return;
+      }
+      try {
+        const device = await navigator.usb.requestDevice({ filters: [] });
+        setBanner('ok', 'WEBUSB DEVICE SELECTED', `${device.productName || 'USB Device'} (VID: 0x${device.vendorId.toString(16)})`);
+        log(`WebUSB selected: ${device.productName} (VID: 0x${device.vendorId.toString(16)}, PID: 0x${device.productId.toString(16)})`);
+      } catch (err) {
+        log(`WebUSB cancelled/failed: ${err.message}`);
+      }
+    });
+
+    // --- 4. Telemetry Sliders & Bench Fault Scenarios ---
+    const sliderVbus = document.getElementById('slider-vbus');
+    const sliderCurr = document.getElementById('slider-curr');
+    const valVbus = document.getElementById('val-vbus');
+    const valCurr = document.getElementById('val-curr');
+    const valWatts = document.getElementById('val-watts');
+    const valCc = document.getElementById('val-cc');
+    const valDp = document.getElementById('val-dp');
+
+    function updateTelemetry(v, a, ccText, dpText) {
+      const voltage = parseFloat(v);
+      const current = parseFloat(a);
+      const watts = (voltage * current).toFixed(1);
+
+      sliderVbus.value = voltage;
+      sliderCurr.value = current;
+      valVbus.textContent = `${voltage.toFixed(1)} V`;
+      valCurr.textContent = `${current.toFixed(2)} A`;
+      valWatts.textContent = `${watts} W`;
+
+      if (ccText) valCc.textContent = ccText;
+      if (dpText) valDp.textContent = dpText;
+    }
+
+    sliderVbus.addEventListener('input', () => {
+      updateTelemetry(sliderVbus.value, sliderCurr.value);
+    });
+
+    sliderCurr.addEventListener('input', () => {
+      updateTelemetry(sliderVbus.value, sliderCurr.value);
+    });
+
+    document.querySelectorAll('.scenario-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const { v, a, cc, dp, state, msg } = btn.dataset;
+        updateTelemetry(v, a, cc, dp);
+        setBanner(state, btn.querySelector('span').textContent.toUpperCase(), msg);
+        log(`Scenario loaded: ${btn.querySelector('span').textContent} -> ${msg}`);
+      });
+    });
+
+    document.getElementById('btn-reset').addEventListener('click', () => {
+      updateTelemetry(20.0, 3.00, 'CC1: 5.1kΩ Rd', 'D+/D-: OK');
+      setBanner('', 'STANDBY', 'Click <strong>Detect Instrument (MIDI / Audio)</strong> after plugging in your Type-C cable.');
+      deviceList.innerHTML = '';
+      log('Bench reset to nominal standby.');
+    });
+  </script>
+</body>
+</html>
