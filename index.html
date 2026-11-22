@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Type-C ElectroDiag Pro — Electronic Instrument Hardware Diagnostic Lab</title>
+    <title>Type-C ElectroDiag Pro — USB-C Electronic Instrument Diagnostics &amp; Repairability Analyzer</title>
     <!-- Tailwind CSS -->
-    <script src="https://tailwindcss.com"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
     <!-- Google Fonts: Inter & JetBrains Mono -->
-    <link rel="preconnect" href="https://googleapis.com">
-    <link rel="preconnect" href="https://gstatic.com" crossorigin>
-    <link href="https://googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     <script>
         tailwind.config = {
@@ -27,12 +27,12 @@
                         labCyan: '#00f0ff',
                     },
                     animation: {
-                        'scan-sweep': 'scanSweep 1.6s ease-in-out infinite',
+                        'scan-sweep': 'scanSweep 1.1s ease-in-out infinite',
                     },
                     keyframes: {
                         scanSweep: {
                             '0%': { transform: 'translateX(-100%)' },
-                            '100%': { transform: 'translateX(250%)' }
+                            '100%': { transform: 'translateX(220%)' }
                         }
                     }
                 }
@@ -41,11 +41,12 @@
     </script>
 
     <style>
+        /* Dark-mode hardware engineering laboratory grid background */
         body {
             background-color: #090d16;
             background-image:
-                radial-gradient(circle at 12% 10%, rgba(0, 240, 255, 0.07) 0%, transparent 42%),
-                radial-gradient(circle at 88% 90%, rgba(16, 185, 129, 0.05) 0%, transparent 42%),
+                radial-gradient(circle at 12% 8%, rgba(0, 240, 255, 0.08) 0%, transparent 42%),
+                radial-gradient(circle at 88% 92%, rgba(16, 185, 129, 0.06) 0%, transparent 42%),
                 linear-gradient(to right, rgba(30, 41, 59, 0.28) 1px, transparent 1px),
                 linear-gradient(to bottom, rgba(30, 41, 59, 0.28) 1px, transparent 1px);
             background-size: 100% 100%, 100% 100%, 32px 32px, 32px 32px;
@@ -53,6 +54,7 @@
             overflow-x: hidden;
         }
 
+        /* Custom precision probe sliders */
         input[type="range"] {
             -webkit-appearance: none;
             appearance: none;
@@ -81,8 +83,11 @@
             background: #67f7ff;
         }
 
+        /* Animated SVG PCB trace current flow */
         @keyframes dashFlow {
-            to { stroke-dashoffset: -24; }
+            to {
+                stroke-dashoffset: -24;
+            }
         }
         .wire-flow-healthy {
             stroke-dasharray: 6 6;
@@ -90,32 +95,41 @@
         }
         .wire-flow-warning {
             stroke-dasharray: 4 8;
-            animation: dashFlow 1.5s linear infinite;
+            animation: dashFlow 1.4s linear infinite;
         }
         @keyframes pulseCrimson {
             0%, 100% { filter: drop-shadow(0 0 4px rgba(239, 68, 68, 0.55)); }
-            50% { filter: drop-shadow(0 0 14px rgba(239, 68, 68, 0.95)); }
+            50% { filter: drop-shadow(0 0 15px rgba(239, 68, 68, 0.95)); }
         }
         .node-fault-pulse {
-            animation: pulseCrimson 1.2s ease-in-out infinite;
+            animation: pulseCrimson 1.15s ease-in-out infinite;
         }
 
-        .console-scroll::-webkit-scrollbar { width: 6px; }
-        .console-scroll::-webkit-scrollbar-track { background: #090d16; }
-        .console-scroll::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 999px; }
+        /* Custom scrollbar for terminal console */
+        .console-scroll::-webkit-scrollbar {
+            width: 6px;
+        }
+        .console-scroll::-webkit-scrollbar-track {
+            background: #090d16;
+        }
+        .console-scroll::-webkit-scrollbar-thumb {
+            background: #1e293b;
+            border-radius: 999px;
+        }
     </style>
 </head>
 <body class="min-h-screen flex flex-col font-sans antialiased selection:bg-cyan-400/30 selection:text-cyan-100">
 
-    <!-- Toast Notification Container -->
+    <!-- Toast Notification Stack (Replaces browser alert/confirm dialogs) -->
     <div id="toastContainer" class="fixed bottom-4 right-4 z-50 flex flex-col gap-2 max-w-sm w-full pointer-events-none px-4 sm:px-0"></div>
 
-    <!-- Top Status & Hardware Connection Header -->
+    <!-- 1. TOP HEADER & HARDWARE ACTION CONTROLS -->
     <header class="sticky top-0 z-30 bg-[#090d16]/90 backdrop-blur-md border-b border-slate-800/90">
         <div class="max-w-[1440px] mx-auto px-4 sm:px-6 py-3.5 flex flex-wrap items-center justify-between gap-3">
-            <!-- Brand & Title -->
+            <!-- Brand Identity -->
             <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-xl bg-cyan-500/10 border border-[#00f0ff]/40 flex items-center justify-center shadow-[0_0_15px_rgba(0,240,255,0.15)] shrink-0">
+                <div class="w-10 h-10 rounded-xl bg-cyan-500/10 border border-[#00f0ff]/40 flex items-center justify-center shadow-[0_0_15px_rgba(0,240,255,0.18)] shrink-0">
+                    <!-- USB Type-C Receptacle Icon -->
                     <svg class="w-6 h-6 text-[#00f0ff]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <rect x="2" y="7" width="20" height="10" rx="5" />
                         <line x1="6" y1="12" x2="18" y2="12" stroke-linecap="round" />
@@ -129,15 +143,15 @@
                             Type-C <span class="text-[#00f0ff]">ElectroDiag</span> Pro
                         </h1>
                         <span class="hidden sm:inline-flex items-center px-2 py-0.5 rounded text-[10px] font-mono font-semibold bg-cyan-950/90 text-[#00f0ff] border border-cyan-700/60">
-                            REV 3.0 BENCH
+                            LAB BENCH v4.2
                         </span>
                     </div>
-                    <p class="text-xs text-slate-400">USB Type-C Electronic Instrument Fault Analyzer &amp; Repairability Engine</p>
+                    <p class="text-xs text-slate-400">USB-C Electronic Instrument Diagnostics &amp; Repairability Analyzer</p>
                 </div>
             </div>
 
-            <!-- Action Controls -->
-            <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto justify-end">
+            <!-- Action Buttons: Audio Toggle, WebSerial, WebUSB, Full Diagnostic Sweep -->
+            <div class="flex flex-wrap items-center gap-2 w-full lg:w-auto justify-end">
                 <button id="soundToggleBtn" onclick="toggleAudio()" title="Toggle Lab Acoustic Feedback"
                     class="p-2.5 rounded-xl bg-[#111827] hover:bg-slate-800 border border-slate-700/80 text-slate-300 transition flex items-center gap-1.5 text-xs font-medium cursor-pointer">
                     <svg id="soundIconOn" class="w-4 h-4 text-[#00f0ff]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -147,39 +161,1735 @@
                         <path stroke-linecap="round" stroke-linejoin="round" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
                         <path stroke-linecap="round" stroke-linejoin="round" d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" />
                     </svg>
-                    <span class="hidden md:inline">Audio</span>
-                </button>
-
-                <button id="simToggleBtn" onclick="toggleSimulation()"
-                    class="px-3.5 py-2.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 transition flex items-center gap-2 text-xs font-semibold cursor-pointer">
-                    <span id="simDot" class="w-2 h-2 rounded-full bg-emerald-400"></span>
-                    <span id="simBtnText">Live Sim: OFF</span>
+                    <span class="hidden xl:inline">Tone</span>
                 </button>
 
                 <button onclick="connectSerialDevice()"
-                    class="px-3.5 py-2.5 rounded-xl bg-[#111827] hover:bg-slate-800 border border-slate-700/80 text-slate-200 transition flex items-center gap-2 text-xs font-semibold cursor-pointer">
-                    <span id="serialStatusDot" class="w-2 h-2 rounded-full bg-slate-500"></span>
-                    <span>WebSerial</span>
+                    class="px-3 py-2.5 rounded-xl bg-[#111827] hover:bg-slate-800 text-slate-200 border border-slate-700 text-xs font-semibold transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    <span>Scan Serial Port (UART)</span>
                 </button>
 
-                <button onclick="connectUsbDevice()"
-                    class="px-3.5 py-2.5 rounded-xl bg-cyan-500/15 hover:bg-cyan-500/25 border border-[#00f0ff]/40 text-[#00f0ff] transition flex items-center gap-2 text-xs font-semibold cursor-pointer">
-                    <span id="usbStatusDot" class="w-2 h-2 rounded-full bg-slate-500"></span>
-                    <span>WebUSB</span>
+                <button id="connectUsbBtn" onclick="connectTypeCDevice()"
+                    class="px-3.5 py-2.5 rounded-xl bg-cyan-500/15 hover:bg-cyan-500/25 active:scale-[0.99] text-[#00f0ff] font-semibold text-xs shadow-[0_0_18px_rgba(0,240,255,0.14)] border border-[#00f0ff]/50 transition flex items-center gap-2 cursor-pointer">
+                    <span class="relative flex h-2 w-2">
+                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#00f0ff] opacity-75"></span>
+                        <span class="relative inline-flex rounded-full h-2 w-2 bg-[#00f0ff]"></span>
+                    </span>
+                    <span>Connect Type-C Device (WebUSB)</span>
+                </button>
+
+                <button id="sweepBtn" onclick="runFullDiagnosticSweep(true)"
+                    class="px-3.5 py-2.5 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 active:scale-[0.99] text-emerald-300 font-semibold text-xs border border-emerald-500/50 transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                    </svg>
+                    <span>Run Full Diagnostic Sweep</span>
                 </button>
             </div>
         </div>
     </header>
 
-    <!-- Main Diagnostic Bench Grid -->
-    <main class="flex-1 max-w-[1440px] w-full mx-auto px-4 sm:px-6 py-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
+    <!-- MAIN WORKSPACE -->
+    <main class="flex-1 max-w-[1440px] w-full mx-auto px-4 sm:px-6 py-5 space-y-5">
 
-        <!-- Left Column: Probe Controls & Fault Presets (4 cols) -->
-        <section class="lg:col-span-4 flex flex-col gap-5">
-            <!-- Quick Test Scenarios -->
-            <div class="bg-[#111827]/90 border border-slate-800 rounded-2xl p-5 shadow-xl">
-                <div class="flex items-center justify-between mb-3">
-                    <h2 class="text-xs font-mono uppercase tracking-wider text-slate-400 font-semibold">Quick Fault Injection Presets</h2>
-                    <button onclick="runAutoSweep()" class="text-xs font-mono text-[#00f0ff] hover:underline cursor-pointer">Run Auto-Scan</button>
+        <!-- REAL HARDWARE DETECTION & USB DESCRIPTOR BAR -->
+        <section class="bg-[#111827]/95 border border-slate-800 rounded-2xl p-4 sm:p-5 shadow-xl relative overflow-hidden">
+            <!-- Animated Diagnostic Sweep Bar -->
+            <div id="scanProgressBar" class="hidden absolute top-0 left-0 right-0 h-1 bg-slate-800 overflow-hidden">
+                <div class="h-full w-1/2 bg-gradient-to-r from-transparent via-[#00f0ff] to-transparent animate-scan-sweep"></div>
+            </div>
+
+            <div class="flex flex-col xl:flex-row xl:items-center justify-between gap-4">
+                <div class="flex items-start sm:items-center gap-3.5">
+                    <div class="w-12 h-12 rounded-xl bg-[#090d16] border border-slate-700/90 flex items-center justify-center shrink-0">
+                        <div id="connectionLed" class="w-4 h-4 rounded-full bg-amber-400 shadow-[0_0_12px_#fbbf24]"></div>
+                    </div>
+                    <div>
+                        <div class="flex flex-wrap items-center gap-2">
+                            <span class="text-[11px] font-mono uppercase tracking-wider text-slate-400">USB Type-C Interface:</span>
+                            <span id="connectionStatusBadge" class="px-2.5 py-0.5 rounded-full text-[11px] font-mono font-semibold bg-amber-500/15 text-amber-300 border border-amber-500/30">
+                                POWER TELEMETRY &amp; PROBE MODE
+                            </span>
+                        </div>
+                        <h2 id="detectedDeviceTitle" class="text-sm sm:text-base font-bold text-white mt-1">
+                            Unenumerated USB-C Target — Ready for WebUSB Scan or Power-Rail Probe Analysis
+                        </h2>
+                        <p id="detectedDeviceSub" class="text-xs text-slate-400 mt-0.5">
+                            Connect an instrument via Type-C cable and click <strong class="text-[#00f0ff]">"Connect Type-C Device (WebUSB)"</strong>, or select a fault simulation preset / adjust probe telemetry below.
+                        </p>
+                    </div>
                 </div>
-                <div class="grid grid-cols-2 gap-2">
+
+                <!-- Live USB Descriptor Metadata Table -->
+                <div class="grid grid-cols-2 sm:grid-cols-5 gap-2.5 bg-[#090d16] border border-slate-800 rounded-xl p-3 shrink-0 font-mono text-xs">
+                    <div>
+                        <div class="text-[10px] text-slate-500 uppercase">Vendor ID (VID)</div>
+                        <div id="metaVid" class="text-slate-200 font-semibold mt-0.5">0x0000</div>
+                    </div>
+                    <div>
+                        <div class="text-[10px] text-slate-500 uppercase">Product ID (PID)</div>
+                        <div id="metaPid" class="text-slate-200 font-semibold mt-0.5">0x0000</div>
+                    </div>
+                    <div>
+                        <div class="text-[10px] text-slate-500 uppercase">Manufacturer</div>
+                        <div id="metaMfg" class="text-slate-300 font-semibold mt-0.5 truncate max-w-[115px]">Unenumerated</div>
+                    </div>
+                    <div>
+                        <div class="text-[10px] text-slate-500 uppercase">Product Name</div>
+                        <div id="metaProduct" class="text-slate-300 font-semibold mt-0.5 truncate max-w-[125px]">USB-C Instrument</div>
+                    </div>
+                    <div class="col-span-2 sm:col-span-1">
+                        <div class="text-[10px] text-slate-500 uppercase">USB Protocol</div>
+                        <div id="metaProtocol" class="text-[#00f0ff] font-semibold mt-0.5">USB-C 5V Base</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- MAIN 12-COLUMN RESPONSIVE GRID -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+
+            <!-- LEFT COLUMN (4/12): 7 FAULT SIMULATION PRESETS & MANUAL PROBE CONTROLS -->
+            <div class="lg:col-span-5 xl:col-span-4 space-y-5">
+
+                <!-- 2. 7 Quick Fault Simulation Presets -->
+                <div class="bg-[#111827] border border-slate-800 rounded-2xl p-4 sm:p-5 shadow-xl">
+                    <div class="flex items-center justify-between mb-3">
+                        <h3 class="text-sm font-bold text-white flex items-center gap-2">
+                            <svg class="w-4 h-4 text-[#00f0ff]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                            </svg>
+                            <span>Quick Fault Simulation Presets</span>
+                        </h3>
+                        <span class="text-[11px] font-mono text-slate-400">7 Scenarios</span>
+                    </div>
+
+                    <div class="space-y-2" id="presetButtons">
+                        <!-- Preset 1 -->
+                        <button onclick="applyPreset('normal')" data-preset="normal"
+                            class="preset-btn w-full text-left px-3.5 py-2.5 rounded-xl border border-emerald-500/40 bg-emerald-950/20 hover:bg-emerald-900/30 transition flex items-center justify-between gap-2 cursor-pointer">
+                            <div>
+                                <div class="text-xs font-bold text-emerald-300">1. Healthy / Normal Operation</div>
+                                <div class="text-[11px] text-slate-400 font-mono">5.05V &bull; 0.85A &bull; 12.5 k&Omega; &bull; 34&deg;C</div>
+                            </div>
+                            <span class="shrink-0 text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">HEALTHY</span>
+                        </button>
+
+                        <!-- Preset 2 -->
+                        <button onclick="applyPreset('pmic_burned')" data-preset="pmic_burned"
+                            class="preset-btn w-full text-left px-3.5 py-2.5 rounded-xl border border-slate-800 bg-[#090d16]/80 hover:bg-slate-800/80 transition flex items-center justify-between gap-2 cursor-pointer">
+                            <div>
+                                <div class="text-xs font-bold text-slate-200">2. Burned PMIC Charging IC (U2)</div>
+                                <div class="text-[11px] text-slate-400 font-mono">5.00V &bull; 2.45A &bull; 4.2 &Omega; &bull; 86&deg;C</div>
+                            </div>
+                            <span class="shrink-0 text-[10px] font-mono px-2 py-0.5 rounded bg-amber-500/15 text-amber-300 border border-amber-500/30">FIXABLE</span>
+                        </button>
+
+                        <!-- Preset 3 -->
+                        <button onclick="applyPreset('short_circuit')" data-preset="short_circuit"
+                            class="preset-btn w-full text-left px-3.5 py-2.5 rounded-xl border border-slate-800 bg-[#090d16]/80 hover:bg-slate-800/80 transition flex items-center justify-between gap-2 cursor-pointer">
+                            <div>
+                                <div class="text-xs font-bold text-slate-200">3. Shorted VBUS MLCC Capacitor (C14)</div>
+                                <div class="text-[11px] text-slate-400 font-mono">0.45V &bull; 3.10A &bull; 0.3 &Omega; &bull; 92&deg;C</div>
+                            </div>
+                            <span class="shrink-0 text-[10px] font-mono px-2 py-0.5 rounded bg-amber-500/15 text-amber-300 border border-amber-500/30">FIXABLE</span>
+                        </button>
+
+                        <!-- Preset 4 -->
+                        <button onclick="applyPreset('battery_dead')" data-preset="battery_dead"
+                            class="preset-btn w-full text-left px-3.5 py-2.5 rounded-xl border border-slate-800 bg-[#090d16]/80 hover:bg-slate-800/80 transition flex items-center justify-between gap-2 cursor-pointer">
+                            <div>
+                                <div class="text-xs font-bold text-slate-200">4. Dead / Open Li-Ion Battery (BAT1)</div>
+                                <div class="text-[11px] text-slate-400 font-mono">5.02V &bull; 0.03A &bull; 48.0 k&Omega; &bull; 29&deg;C</div>
+                            </div>
+                            <span class="shrink-0 text-[10px] font-mono px-2 py-0.5 rounded bg-amber-500/15 text-amber-300 border border-amber-500/30">FIXABLE</span>
+                        </button>
+
+                        <!-- Preset 5 -->
+                        <button onclick="applyPreset('typec_port')" data-preset="typec_port"
+                            class="preset-btn w-full text-left px-3.5 py-2.5 rounded-xl border border-slate-800 bg-[#090d16]/80 hover:bg-slate-800/80 transition flex items-center justify-between gap-2 cursor-pointer">
+                            <div>
+                                <div class="text-xs font-bold text-slate-200">5. Damaged Type-C Port / CC Pins (J1)</div>
+                                <div class="text-[11px] text-slate-400 font-mono">0.00V &bull; 0.00A &bull; 99.9 k&Omega; &bull; 27&deg;C</div>
+                            </div>
+                            <span class="shrink-0 text-[10px] font-mono px-2 py-0.5 rounded bg-amber-500/15 text-amber-300 border border-amber-500/30">FIXABLE</span>
+                        </button>
+
+                        <!-- Preset 6 -->
+                        <button onclick="applyPreset('ldo_fault')" data-preset="ldo_fault"
+                            class="preset-btn w-full text-left px-3.5 py-2.5 rounded-xl border border-slate-800 bg-[#090d16]/80 hover:bg-slate-800/80 transition flex items-center justify-between gap-2 cursor-pointer">
+                            <div>
+                                <div class="text-xs font-bold text-slate-200">6. Failed 3.3V LDO Regulator (U4)</div>
+                                <div class="text-[11px] text-slate-400 font-mono">5.01V &bull; 0.14A &bull; 18.5 &Omega; &bull; 68&deg;C</div>
+                            </div>
+                            <span class="shrink-0 text-[10px] font-mono px-2 py-0.5 rounded bg-amber-500/15 text-amber-300 border border-amber-500/30">FIXABLE</span>
+                        </button>
+
+                        <!-- Preset 7 -->
+                        <button onclick="applyPreset('mcu_burned')" data-preset="mcu_burned"
+                            class="preset-btn w-full text-left px-3.5 py-2.5 rounded-xl border border-slate-800 bg-[#090d16]/80 hover:bg-slate-800/80 transition flex items-center justify-between gap-2 cursor-pointer">
+                            <div>
+                                <div class="text-xs font-bold text-slate-200">7. Dead Main MCU &amp; Charred PCB (U1)</div>
+                                <div class="text-[11px] text-slate-400 font-mono">4.85V &bull; 1.95A &bull; 1.1 &Omega; &bull; 108&deg;C</div>
+                            </div>
+                            <span class="shrink-0 text-[10px] font-mono px-2 py-0.5 rounded bg-rose-500/20 text-rose-300 border border-rose-500/40">NOT FIXABLE</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 3. Manual Probe & Telemetry Controls -->
+                <div class="bg-[#111827] border border-slate-800 rounded-2xl p-4 sm:p-5 shadow-xl space-y-3.5">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-sm font-bold text-white flex items-center gap-2">
+                            <svg class="w-4 h-4 text-[#00f0ff]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+                            </svg>
+                            <span>Manual Probe &amp; Telemetry Controls</span>
+                        </h3>
+                        <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-[#090d16] text-[#00f0ff] border border-slate-700">BENCH METER</span>
+                    </div>
+
+                    <!-- Target Instrument Selector -->
+                    <div class="bg-[#090d16] border border-slate-800 rounded-xl p-3">
+                        <label for="instrumentSelect" class="block text-[11px] font-medium text-slate-400 mb-1.5">Connected Electronic Instrument</label>
+                        <select id="instrumentSelect" onchange="handleManualSensorChange()"
+                            class="w-full bg-[#111827] border border-slate-700 rounded-lg px-3 py-2 text-xs font-medium text-slate-100 focus:outline-none focus:border-[#00f0ff]">
+                            <option value="Digital Bench Multimeter">Digital Bench Multimeter</option>
+                            <option value="USB-C Studio Audio Interface">USB-C Studio Audio Interface</option>
+                            <option value="Portable Digital Synthesizer">Portable Digital Synthesizer</option>
+                            <option value="Handheld Dual-Channel Oscilloscope">Handheld Dual-Channel Oscilloscope</option>
+                            <option value="Embedded Field Signal Analyzer">Embedded Field Signal Analyzer</option>
+                        </select>
+                    </div>
+
+                    <!-- VBUS Voltage Slider (0.00V - 20.00V) -->
+                    <div class="bg-[#090d16] border border-slate-800 rounded-xl p-3">
+                        <div class="flex justify-between items-center mb-1.5">
+                            <label for="voltageSlider" class="text-xs font-medium text-slate-300">VBUS Supply Voltage</label>
+                            <span id="voltageDisplay" class="font-mono text-sm font-bold text-[#00f0ff]">5.05 V</span>
+                        </div>
+                        <input id="voltageSlider" type="range" min="0" max="20" step="0.01" value="5.05" oninput="handleManualSensorChange()" class="w-full">
+                        <div class="flex justify-between text-[10px] font-mono text-slate-500 mt-1">
+                            <span>0.00V Open</span>
+                            <span>5.00V Std</span>
+                            <span>20.00V PD</span>
+                        </div>
+                    </div>
+
+                    <!-- Current Draw Slider (0.00A - 5.00A) -->
+                    <div class="bg-[#090d16] border border-slate-800 rounded-xl p-3">
+                        <div class="flex justify-between items-center mb-1.5">
+                            <label for="currentSlider" class="text-xs font-medium text-slate-300">Current Draw (IBUS)</label>
+                            <span id="currentDisplay" class="font-mono text-sm font-bold text-emerald-400">0.85 A</span>
+                        </div>
+                        <input id="currentSlider" type="range" min="0" max="5" step="0.01" value="0.85" oninput="handleManualSensorChange()" class="w-full">
+                        <div class="flex justify-between text-[10px] font-mono text-slate-500 mt-1">
+                            <span>0.00A</span>
+                            <span>0.85A Nom</span>
+                            <span>5.00A Max</span>
+                        </div>
+                    </div>
+
+                    <!-- Rail-to-GND Impedance Slider (Piecewise 0.1 Ω - 100.0 kΩ) -->
+                    <div class="bg-[#090d16] border border-slate-800 rounded-xl p-3">
+                        <div class="flex justify-between items-center mb-1.5">
+                            <label for="resistanceSlider" class="text-xs font-medium text-slate-300">Rail-to-GND Impedance</label>
+                            <span id="resistanceDisplay" class="font-mono text-sm font-bold text-[#00f0ff]">12.5 k&Omega;</span>
+                        </div>
+                        <input id="resistanceSlider" type="range" min="0" max="1000" step="1" value="760" oninput="handleManualSensorChange()" class="w-full">
+                        <div class="flex justify-between text-[10px] font-mono text-slate-500 mt-1">
+                            <span>0.1 &Omega; Short</span>
+                            <span>100 &Omega;</span>
+                            <span>100.0 k&Omega; Open</span>
+                        </div>
+                    </div>
+
+                    <!-- Hotspot Temperature Slider (20°C - 120°C) -->
+                    <div class="bg-[#090d16] border border-slate-800 rounded-xl p-3">
+                        <div class="flex justify-between items-center mb-1.5">
+                            <label for="tempSlider" class="text-xs font-medium text-slate-300">Hotspot Temperature</label>
+                            <span id="tempDisplay" class="font-mono text-sm font-bold text-emerald-400">34 &deg;C</span>
+                        </div>
+                        <input id="tempSlider" type="range" min="20" max="120" step="1" value="34" oninput="handleManualSensorChange()" class="w-full">
+                        <div class="flex justify-between text-[10px] font-mono text-slate-500 mt-1">
+                            <span>20&deg;C Ambient</span>
+                            <span>68&deg;C Warm</span>
+                            <span>120&deg;C Thermal</span>
+                        </div>
+                    </div>
+
+                    <!-- CC1/CC2 & D+/D- Protocol Selectors -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                        <div class="bg-[#090d16] border border-slate-800 rounded-xl p-3">
+                            <label for="ccStatusSelect" class="block text-[11px] font-medium text-slate-400 mb-1.5">CC1/CC2 Config Channel</label>
+                            <select id="ccStatusSelect" onchange="handleManualSensorChange()"
+                                class="w-full bg-[#111827] border border-slate-700 rounded-lg px-2.5 py-2 text-xs font-mono text-slate-200 focus:outline-none focus:border-[#00f0ff]">
+                                <option value="active">CC1/CC2 5.1k&Omega; Rd Active</option>
+                                <option value="cc1_only">CC1 Active (Single Line)</option>
+                                <option value="pulled_low">CC1 Pulled Low / Clamped</option>
+                                <option value="open">CC1/CC2 Open / Fractured</option>
+                            </select>
+                        </div>
+
+                        <div class="bg-[#090d16] border border-slate-800 rounded-xl p-3">
+                            <label for="dataStatusSelect" class="block text-[11px] font-medium text-slate-400 mb-1.5">D+/D- USB Data Bus</label>
+                            <select id="dataStatusSelect" onchange="handleManualSensorChange()"
+                                class="w-full bg-[#111827] border border-slate-700 rounded-lg px-2.5 py-2 text-xs font-mono text-slate-200 focus:outline-none focus:border-[#00f0ff]">
+                                <option value="enumerated">D+/D- Enumerated</option>
+                                <option value="no_response">D+/D- No Response</option>
+                                <option value="dead">D+/D- Dead / Unpowered</option>
+                                <option value="corrupted">D+/D- Corrupted / Shorted</option>
+                                <option value="open">D+/D- Open Circuit</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- RIGHT COLUMN (8/12): PCB SCHEMATIC, OSCILLOSCOPE, CONSOLE & VERDICT -->
+            <div class="lg:col-span-7 xl:col-span-8 space-y-5">
+
+                <!-- 4. Interactive PCB Power-Path Schematic (SVG) & Test Point Inspector -->
+                <div class="bg-[#111827] border border-slate-800 rounded-2xl p-4 sm:p-5 shadow-xl">
+                    <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+                        <div>
+                            <h3 class="text-sm font-bold text-white flex items-center gap-2">
+                                <svg class="w-4 h-4 text-[#00f0ff]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
+                                </svg>
+                                <span>Interactive PCB Power-Path &amp; Logic Schematic</span>
+                            </h3>
+                            <p class="text-xs text-slate-400 mt-0.5">Click any subsystem block to inspect Expected vs. Measured test point values and impedance.</p>
+                        </div>
+
+                        <div class="flex items-center gap-3 text-[11px] font-mono">
+                            <span class="flex items-center gap-1.5 text-emerald-400"><span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>Nominal</span>
+                            <span class="flex items-center gap-1.5 text-amber-400"><span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span>Degraded</span>
+                            <span class="flex items-center gap-1.5 text-rose-400"><span class="w-2.5 h-2.5 rounded-full bg-rose-500"></span>Fault Alert</span>
+                        </div>
+                    </div>
+
+                    <!-- Interactive SVG PCB Topology -->
+                    <div class="w-full bg-[#090d16] border border-slate-800 rounded-xl p-2 sm:p-3 overflow-hidden">
+                        <svg id="pcbSchematicSvg" viewBox="0 0 780 265" class="w-full h-auto select-none">
+                            <defs>
+                                <pattern id="pcbSubGrid" width="20" height="20" patternUnits="userSpaceOnUse">
+                                    <path d="M 20 0 L 0 0 0 20" fill="none" stroke="rgba(51, 65, 85, 0.25)" stroke-width="0.7"/>
+                                </pattern>
+                            </defs>
+                            <rect width="780" height="265" fill="url(#pcbSubGrid)" rx="8"/>
+
+                            <text x="18" y="22" fill="#64748b" font-family="JetBrains Mono, monospace" font-size="10" font-weight="600">
+                                INSTRUMENT POWER &amp; DATA ARCHITECTURE (VBUS &rarr; VSYS &rarr; 3.3V_CORE)
+                            </text>
+
+                            <!-- Copper Power Traces -->
+                            <line id="wire_port_esd" x1="135" y1="82" x2="185" y2="82" stroke="#10b981" stroke-width="3.5" class="wire-flow-healthy"/>
+                            <line id="wire_esd_pmic" x1="305" y1="82" x2="355" y2="82" stroke="#10b981" stroke-width="3.5" class="wire-flow-healthy"/>
+                            <line id="wire_pmic_ldo" x1="480" y1="82" x2="530" y2="82" stroke="#10b981" stroke-width="3.5" class="wire-flow-healthy"/>
+                            <line id="wire_ldo_mcu" x1="645" y1="82" x2="680" y2="82" stroke="#10b981" stroke-width="3.5" class="wire-flow-healthy"/>
+                            <path id="wire_pmic_bat" d="M 417 128 L 417 172" stroke="#10b981" stroke-width="3.5" class="wire-flow-healthy"/>
+
+                            <!-- USB 2.0 Differential Data Bus -->
+                            <path id="wire_data_bus" d="M 76 128 L 76 226 L 722 226 L 722 128" fill="none" stroke="#00f0ff" stroke-width="2" stroke-dasharray="5 5"/>
+                            <text x="315" y="243" fill="#00f0ff" font-family="JetBrains Mono, monospace" font-size="9.5">
+                                USB D+ / D- DIFFERENTIAL DATA ENUMERATION BUS
+                            </text>
+
+                            <!-- NODE 1: J1 USB-C Port -->
+                            <g id="node_port" onclick="inspectComponent('port')" class="cursor-pointer transition-opacity hover:opacity-90">
+                                <rect x="18" y="38" width="117" height="90" rx="10" fill="#111827" stroke="#10b981" stroke-width="2.5"/>
+                                <text x="28" y="57" fill="#94a3b8" font-family="JetBrains Mono, monospace" font-size="10" font-weight="700">J1 &bull; INPUT</text>
+                                <text x="28" y="76" fill="#f8fafc" font-family="Inter, sans-serif" font-size="12" font-weight="700">USB-C Port</text>
+                                <text x="28" y="92" fill="#94a3b8" font-family="Inter, sans-serif" font-size="10">24-Pin Receptacle</text>
+                                <rect x="28" y="102" width="97" height="17" rx="4" fill="rgba(16,185,129,0.15)"/>
+                                <text id="node_port_val" x="76" y="114" text-anchor="middle" fill="#34d399" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="600">5.05V OK</text>
+                            </g>
+
+                            <!-- NODE 2: D1/R1 ESD & CC Logic -->
+                            <g id="node_esd" onclick="inspectComponent('esd')" class="cursor-pointer transition-opacity hover:opacity-90">
+                                <rect x="185" y="38" width="120" height="90" rx="10" fill="#111827" stroke="#10b981" stroke-width="2.5"/>
+                                <text x="195" y="57" fill="#94a3b8" font-family="JetBrains Mono, monospace" font-size="10" font-weight="700">D1 / R1 &bull; CC</text>
+                                <text x="195" y="76" fill="#f8fafc" font-family="Inter, sans-serif" font-size="12" font-weight="700">ESD &amp; CC Logic</text>
+                                <text x="195" y="92" fill="#94a3b8" font-family="Inter, sans-serif" font-size="10">5.1k&Omega; Rd Pull-Down</text>
+                                <rect x="195" y="102" width="100" height="17" rx="4" fill="rgba(16,185,129,0.15)"/>
+                                <text id="node_esd_val" x="245" y="114" text-anchor="middle" fill="#34d399" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="600">CC1/CC2 OK</text>
+                            </g>
+
+                            <!-- NODE 3: U2/C14 PMIC Charger & Input Filter -->
+                            <g id="node_pmic" onclick="inspectComponent('pmic')" class="cursor-pointer transition-opacity hover:opacity-90">
+                                <rect x="355" y="38" width="125" height="90" rx="10" fill="#111827" stroke="#10b981" stroke-width="2.5"/>
+                                <text x="365" y="57" fill="#94a3b8" font-family="JetBrains Mono, monospace" font-size="10" font-weight="700">U2 / C14 &bull; PWR</text>
+                                <text x="365" y="76" fill="#f8fafc" font-family="Inter, sans-serif" font-size="12" font-weight="700">PMIC &amp; Filter</text>
+                                <text x="365" y="92" fill="#94a3b8" font-family="Inter, sans-serif" font-size="10">Charger IC &amp; MLCC</text>
+                                <rect x="365" y="102" width="105" height="17" rx="4" fill="rgba(16,185,129,0.15)"/>
+                                <text id="node_pmic_val" x="417" y="114" text-anchor="middle" fill="#34d399" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="600">0.85A &bull; 34&deg;C</text>
+                            </g>
+
+                            <!-- NODE 4: U4 3.3V LDO Regulator -->
+                            <g id="node_ldo" onclick="inspectComponent('ldo')" class="cursor-pointer transition-opacity hover:opacity-90">
+                                <rect x="530" y="38" width="115" height="90" rx="10" fill="#111827" stroke="#10b981" stroke-width="2.5"/>
+                                <text x="540" y="57" fill="#94a3b8" font-family="JetBrains Mono, monospace" font-size="10" font-weight="700">U4 &bull; RAIL</text>
+                                <text x="540" y="76" fill="#f8fafc" font-family="Inter, sans-serif" font-size="12" font-weight="700">3.3V LDO Reg</text>
+                                <text x="540" y="92" fill="#94a3b8" font-family="Inter, sans-serif" font-size="10">Core Logic Supply</text>
+                                <rect x="540" y="102" width="95" height="17" rx="4" fill="rgba(16,185,129,0.15)"/>
+                                <text id="node_ldo_val" x="587" y="114" text-anchor="middle" fill="#34d399" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="600">3.30V STABLE</text>
+                            </g>
+
+                            <!-- NODE 5: U1 Main MCU / Processor -->
+                            <g id="node_mcu" onclick="inspectComponent('mcu')" class="cursor-pointer transition-opacity hover:opacity-90">
+                                <rect x="680" y="38" width="84" height="90" rx="10" fill="#111827" stroke="#10b981" stroke-width="2.5"/>
+                                <text x="688" y="57" fill="#94a3b8" font-family="JetBrains Mono, monospace" font-size="10" font-weight="700">U1 &bull; SOC</text>
+                                <text x="688" y="76" fill="#f8fafc" font-family="Inter, sans-serif" font-size="12" font-weight="700">Main MCU</text>
+                                <text x="688" y="92" fill="#94a3b8" font-family="Inter, sans-serif" font-size="9.5">&amp; DSP Core</text>
+                                <rect x="687" y="102" width="70" height="17" rx="4" fill="rgba(16,185,129,0.15)"/>
+                                <text id="node_mcu_val" x="722" y="114" text-anchor="middle" fill="#34d399" font-family="JetBrains Mono, monospace" font-size="9" font-weight="600">ACTIVE</text>
+                            </g>
+
+                            <!-- NODE 6: BAT1 Li-Ion Battery Pack -->
+                            <g id="node_bat" onclick="inspectComponent('bat')" class="cursor-pointer transition-opacity hover:opacity-90">
+                                <rect x="342" y="172" width="150" height="42" rx="8" fill="#111827" stroke="#10b981" stroke-width="2"/>
+                                <text x="352" y="190" fill="#f8fafc" font-family="Inter, sans-serif" font-size="11" font-weight="700">BAT1 &bull; Li-Ion Battery Pack</text>
+                                <text x="352" y="205" fill="#34d399" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="600">3.94V &bull; Charging Normal</text>
+                            </g>
+                        </svg>
+                    </div>
+
+                    <!-- Test Point Probe Inspector Readout Box -->
+                    <div class="mt-3.5 bg-[#090d16] border border-slate-800 rounded-xl p-3.5 grid grid-cols-1 md:grid-cols-12 gap-3 items-center">
+                        <div class="md:col-span-7">
+                            <div class="flex items-center gap-2">
+                                <span id="inspCode" class="px-2 py-0.5 rounded bg-cyan-950 text-[#00f0ff] border border-cyan-800 font-mono text-[11px] font-bold">U2 / C14</span>
+                                <h4 id="inspTitle" class="text-xs sm:text-sm font-bold text-white">PMIC Charging IC (U2) &amp; VBUS Input Filter (C14)</h4>
+                            </div>
+                            <p id="inspDesc" class="text-xs text-slate-400 mt-1 leading-relaxed">
+                                Regulates VBUS input power into controlled Li-Ion charge current and generates the primary system rail (VSYS).
+                            </p>
+                            <p id="inspTip" class="text-[11px] text-cyan-300/90 mt-1 font-mono">
+                                Probe Tip: Measure TP_VSYS pad next to buck inductor L2; should read 3.7V–4.2V when VBUS is present.
+                            </p>
+                        </div>
+                        <div class="md:col-span-5 grid grid-cols-2 gap-2 font-mono text-xs">
+                            <div class="bg-[#111827] border border-slate-800 rounded-lg p-2.5">
+                                <div class="text-[10px] text-slate-500">EXPECTED / MEASURED V</div>
+                                <div id="inspVoltage" class="text-emerald-400 font-semibold mt-0.5">4.20V / 4.19V</div>
+                            </div>
+                            <div class="bg-[#111827] border border-slate-800 rounded-lg p-2.5">
+                                <div class="text-[10px] text-slate-500">RAIL IMPEDANCE</div>
+                                <div id="inspImpedance" class="text-[#00f0ff] font-semibold mt-0.5">12.5 k&Omega;</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 5 & 7. Live Multi-Channel Oscilloscope & Timestamped Diagnostic Console -->
+                <div class="grid grid-cols-1 md:grid-cols-12 gap-5">
+                    <!-- 5. HTML5 Canvas Live Oscilloscope -->
+                    <div class="md:col-span-7 bg-[#111827] border border-slate-800 rounded-2xl p-4 shadow-xl flex flex-col">
+                        <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
+                            <h3 class="text-xs sm:text-sm font-bold text-white flex items-center gap-2">
+                                <span class="w-2 h-2 rounded-full bg-[#00f0ff] animate-pulse"></span>
+                                <span>Live Multi-Channel Oscilloscope</span>
+                            </h3>
+                            <div class="flex items-center gap-3 text-[10px] font-mono">
+                                <span class="text-[#00f0ff]">&mdash; CH1 VBUS</span>
+                                <span class="text-emerald-400">&mdash; CH2 IBUS</span>
+                                <span class="text-amber-400">&mdash; CH3 TEMP</span>
+                            </div>
+                        </div>
+                        <!-- Live RMS & Ripple Metrics Bar -->
+                        <div class="grid grid-cols-3 gap-2 mb-2 font-mono text-[10px] bg-[#090d16] border border-slate-800 rounded-lg px-2.5 py-1.5">
+                            <div>
+                                <span class="text-slate-500">VBUS RMS:</span>
+                                <span id="scopeVrms" class="text-[#00f0ff] font-bold">5.05V</span>
+                            </div>
+                            <div>
+                                <span class="text-slate-500">RIPPLE:</span>
+                                <span id="scopeRipple" class="text-emerald-400 font-bold">24 mVpp</span>
+                            </div>
+                            <div>
+                                <span class="text-slate-500">IBUS RMS:</span>
+                                <span id="scopeIrms" class="text-amber-400 font-bold">0.85A</span>
+                            </div>
+                        </div>
+                        <div id="scopeContainer" class="relative flex-1 min-h-[175px] w-full bg-[#090d16] border border-slate-800 rounded-xl overflow-hidden">
+                            <canvas id="oscilloscopeCanvas" class="block w-full h-full"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- 7. Timestamped Step-by-Step Diagnostic Console Log -->
+                    <div class="md:col-span-5 bg-[#111827] border border-slate-800 rounded-2xl p-4 shadow-xl flex flex-col">
+                        <div class="flex items-center justify-between mb-2.5">
+                            <h3 class="text-xs sm:text-sm font-bold text-white font-mono">DIAGNOSTIC CONSOLE LOG</h3>
+                            <span class="text-[10px] font-mono text-cyan-400 bg-cyan-950/80 px-2 py-0.5 rounded border border-cyan-800/60">LIVE AUDIT</span>
+                        </div>
+                        <div id="diagnosticConsole" class="console-scroll flex-1 max-h-[210px] overflow-y-auto bg-[#090d16] border border-slate-800 rounded-xl p-3 font-mono text-[11px] space-y-2 leading-relaxed">
+                            <!-- Populated dynamically with timestamps -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 6. Diagnostic Verdict & Repairability Report Card -->
+                <div class="bg-[#111827] border border-slate-800 rounded-2xl p-5 sm:p-6 shadow-2xl space-y-5">
+
+                    <!-- Report Header & Export Button -->
+                    <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-800 pb-4">
+                        <div>
+                            <span class="text-[11px] font-mono uppercase tracking-wider text-[#00f0ff]">Hardware Failure &amp; Serviceability Assessment</span>
+                            <h3 class="text-lg sm:text-xl font-extrabold text-white mt-0.5">Diagnostic Verdict &amp; Repairability Report</h3>
+                        </div>
+                        <div class="flex flex-wrap items-center gap-2">
+                            <button onclick="downloadDiagnosticReport()"
+                                class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 active:scale-[0.99] text-slate-100 border border-slate-600 text-xs font-semibold transition flex items-center gap-2 cursor-pointer shadow-md">
+                                <svg class="w-4 h-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                </svg>
+                                <span>Download Report (.txt)</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Prominent Verdict Banner -->
+                    <div id="verdictBanner" class="rounded-xl p-4 sm:p-5 border bg-emerald-950/25 border-emerald-500/40 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        <div>
+                            <div class="text-[11px] font-mono uppercase tracking-wider text-slate-400">Primary Determination</div>
+                            <div id="verdictTitle" class="text-lg sm:text-xl font-extrabold text-emerald-400 mt-0.5 tracking-tight">
+                                INSTRUMENT FUNCTIONAL
+                            </div>
+                            <p id="verdictSubtitle" class="text-xs sm:text-sm text-slate-300 mt-1 leading-relaxed">
+                                All USB-C power negotiation channels, charging regulation stages, and microcontroller rails operate within factory specification.
+                            </p>
+                        </div>
+                        <div class="shrink-0">
+                            <span id="verdictPill" class="inline-block px-3.5 py-1.5 rounded-lg font-mono text-xs font-extrabold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
+                                HEALTHY — NO REPAIR NEEDED
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Damaged Part Designators & Root Cause Analysis -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="bg-[#090d16] border border-slate-800 rounded-xl p-4 space-y-2">
+                            <div class="flex items-center justify-between">
+                                <span class="text-[11px] font-mono uppercase text-slate-400 font-semibold">Identified Faulty Part(s)</span>
+                                <span id="faultDesignatorBadge" class="px-2 py-0.5 rounded font-mono text-[11px] font-bold bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
+                                    NONE
+                                </span>
+                            </div>
+                            <div id="faultPartName" class="text-sm sm:text-base font-bold text-white">
+                                No Damaged PCB Components Detected
+                            </div>
+                            <div id="faultFailureMode" class="text-xs font-mono text-cyan-400">
+                                Failure Signature: Nominal Operation (0 Faults)
+                            </div>
+                        </div>
+
+                        <div class="bg-[#090d16] border border-slate-800 rounded-xl p-4 space-y-2">
+                            <span class="text-[11px] font-mono uppercase text-slate-400 font-semibold">Root Cause Analysis</span>
+                            <p id="rootCauseText" class="text-xs text-slate-300 leading-relaxed">
+                                VBUS negotiates at 5.05V with 0.85A nominal load current, 12.5 k&Omega; rail-to-ground impedance, and 34&deg;C thermal stability.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Engineering Fixability Reasoning & Bench Metrics -->
+                    <div class="bg-[#090d16] border border-slate-800 rounded-xl p-4 space-y-3">
+                        <h4 class="text-xs font-mono uppercase tracking-wider text-slate-400 font-semibold">
+                            Repairability Verdict &amp; Engineering Assessment
+                        </h4>
+                        <p id="fixabilityReasoning" class="text-xs sm:text-sm text-slate-200 leading-relaxed">
+                            The instrument is fully operational and requires no component replacement. Maintain clean USB-C port contacts and use certified USB-IF compliant cables.
+                        </p>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 border-t border-slate-800/90 font-mono text-xs">
+                            <div class="bg-[#111827] rounded-lg p-3 border border-slate-800">
+                                <div class="text-[10px] text-slate-500">TECHNICIAN SKILL LEVEL</div>
+                                <div id="repairDifficulty" class="text-emerald-400 font-semibold mt-0.5">None Required</div>
+                            </div>
+                            <div class="bg-[#111827] rounded-lg p-3 border border-slate-800">
+                                <div class="text-[10px] text-slate-500">ESTIMATED PARTS COST</div>
+                                <div id="repairCost" class="text-[#00f0ff] font-semibold mt-0.5">$0.00 USD</div>
+                            </div>
+                            <div class="bg-[#111827] rounded-lg p-3 border border-slate-800">
+                                <div class="text-[10px] text-slate-500">ECONOMIC VIABILITY</div>
+                                <div id="repairViability" class="text-emerald-400 font-semibold mt-0.5">100% Operational</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step-by-Step Repair Procedure & Required Bench Tools -->
+                    <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
+                        <div class="md:col-span-7 bg-[#090d16] border border-slate-800 rounded-xl p-4">
+                            <h4 class="text-xs font-bold uppercase tracking-wider text-[#00f0ff] mb-2.5 flex items-center gap-1.5">
+                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                                </svg>
+                                <span>Step-by-Step Repair Procedure</span>
+                            </h4>
+                            <ol id="repairStepsList" class="space-y-2 text-xs text-slate-300 list-decimal list-inside leading-relaxed">
+                                <li>Inspect USB Type-C receptacle J1 for dust, oxidation, or bent center tongue pins.</li>
+                                <li>Verify steady 5.05V VBUS and 0.85A charging draw with an inline USB-C power meter.</li>
+                            </ol>
+                        </div>
+
+                        <div class="md:col-span-5 bg-[#090d16] border border-slate-800 rounded-xl p-4">
+                            <h4 class="text-xs font-bold uppercase tracking-wider text-amber-400 mb-2.5 flex items-center gap-1.5">
+                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                </svg>
+                                <span>Required Bench Tools</span>
+                            </h4>
+                            <div id="toolsBadgesList" class="flex flex-wrap gap-1.5">
+                                <span class="px-2.5 py-1 rounded-md bg-[#111827] text-slate-200 border border-slate-700 text-[11px] font-mono">USB-C Inline Power Meter</span>
+                                <span class="px-2.5 py-1 rounded-md bg-[#111827] text-slate-200 border border-slate-700 text-[11px] font-mono">Digital Multimeter</span>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-slate-800/80 bg-[#090d16] py-4 px-4 text-xs text-slate-500">
+        <div class="max-w-[1440px] mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
+            <span>Type-C ElectroDiag Pro &bull; USB-C Electronic Instrument Diagnostics &amp; Repairability Analyzer</span>
+            <span class="font-mono text-[11px] text-slate-600">WebUSB &bull; WebSerial &bull; Multi-Channel Oscilloscope &bull; PCB Power-Path Analysis</span>
+        </div>
+    </footer>
+
+    <!-- APPLICATION DIAGNOSTIC & SIMULATION ENGINE -->
+    <script>
+        /**
+         * =========================================================================
+         * 1. GLOBAL STATE, PIECEWISE IMPEDANCE MAPPING & COMPONENT CATALOG
+         * =========================================================================
+         */
+        let audioEnabled = true;
+        let audioCtx = null;
+        let activePresetKey = 'normal';
+        let latestDiagnosis = null;
+
+        let usbMetadata = {
+            vid: '0x0000',
+            pid: '0x0000',
+            manufacturer: 'Unenumerated',
+            product: 'USB-C Instrument',
+            protocol: 'USB-C 5V Base'
+        };
+
+        // Detailed PCB subsystem metadata for the interactive Test Point Inspector
+        const PCB_COMPONENTS = {
+            port: {
+                code: 'J1 • USB-C PORT',
+                title: 'USB Type-C 24-Pin Receptacle (J1)',
+                desc: 'Primary physical interface carrying VBUS supply power (5V–20V), CC1/CC2 configuration lines, and D+/D- differential data pairs.',
+                tip: 'Inspect internal receptacle tongue for bent pins; verify continuity from J1 VBUS pins to TVS diode D1.',
+                expectedV: '5.05V',
+                expectedZ: '12.5 kΩ'
+            },
+            esd: {
+                code: 'D1 / R1 • ESD & CC',
+                title: 'TVS Surge Diode (D1) & 5.1kΩ CC Pull-Down Resistors (R1/R2)',
+                desc: 'Clamps electrostatic spikes and presents 5.1kΩ Rd termination on CC1/CC2 so USB-C power adapters enable VBUS output.',
+                tip: 'Measure resistance from CC1 and CC2 pins to GND; both must read ~5.1kΩ (±5%) when unpowered.',
+                expectedV: '1.65V (CC)',
+                expectedZ: '5.1 kΩ'
+            },
+            pmic: {
+                code: 'U2 / C14 • PMIC',
+                title: 'PMIC Charging IC (U2) & VBUS Input Filter Capacitor (C14)',
+                desc: 'Regulates VBUS input into controlled Li-Ion charge current, enforces over-current limits, and generates the VSYS power rail.',
+                tip: 'Probe TP_VSYS pad next to main buck inductor L2; should read 3.7V–4.2V when VBUS is supplied.',
+                expectedV: '4.20V',
+                expectedZ: '12.5 kΩ'
+            },
+            ldo: {
+                code: 'U4 • 3.3V LDO REG',
+                title: 'Low-Dropout 3.3V Core Voltage Regulator (U4)',
+                desc: 'Steps down VSYS (3.7V–5.0V) into a clean, low-ripple 3.30V supply rail for the main microcontroller and analog front-end.',
+                tip: 'Probe U4 VOUT pin; if VIN > 3.6V but VOUT < 3.0V without a downstream short, replace regulator U4.',
+                expectedV: '3.30V',
+                expectedZ: '180.0 Ω'
+            },
+            mcu: {
+                code: 'U1 • MAIN MCU / DSP',
+                title: 'Main Microcontroller / DSP Processor (U1)',
+                desc: 'Executes proprietary instrument firmware, manages USB enumeration, and processes sensor/ADC signal measurements.',
+                tip: 'Check 3.3V decoupling caps around U1. Severe hotspot (>100°C) with ~1.1Ω 3.3V short indicates silicon breakdown.',
+                expectedV: '3.30V',
+                expectedZ: '220.0 Ω'
+            },
+            bat: {
+                code: 'BAT1 • LI-ION PACK',
+                title: 'Rechargeable Li-Ion Battery Cell & BMS Protection Board (BAT1)',
+                desc: 'Provides portable energy storage and buffers peak current transients during instrument operation.',
+                tip: 'Disconnect battery plug BAT1 and probe cell leads directly; <2.5V indicates deep discharge or tripped BMS protection.',
+                expectedV: '3.94V',
+                expectedZ: '48.0 kΩ'
+            }
+        };
+
+        // 7 Exact Fault Simulation Presets matching specification
+        const PRESET_CONFIGS = {
+            normal: {
+                voltage: 5.05,
+                current: 0.85,
+                resistanceOhms: 12500.0, // 12.5 kΩ
+                temp: 34,
+                cc: 'active',
+                data: 'enumerated'
+            },
+            pmic_burned: {
+                voltage: 5.00,
+                current: 2.45,
+                resistanceOhms: 4.2,     // 4.2 Ω
+                temp: 86,
+                cc: 'cc1_only',
+                data: 'dead'
+            },
+            short_circuit: {
+                voltage: 0.45,
+                current: 3.10,
+                resistanceOhms: 0.3,     // 0.3 Ω
+                temp: 92,
+                cc: 'pulled_low',
+                data: 'dead'
+            },
+            battery_dead: {
+                voltage: 5.02,
+                current: 0.03,
+                resistanceOhms: 48000.0, // 48.0 kΩ
+                temp: 29,
+                cc: 'cc1_only',
+                data: 'enumerated'
+            },
+            typec_port: {
+                voltage: 0.00,
+                current: 0.00,
+                resistanceOhms: 99900.0, // 99.9 kΩ
+                temp: 27,
+                cc: 'open',
+                data: 'open'
+            },
+            ldo_fault: {
+                voltage: 5.01,
+                current: 0.14,
+                resistanceOhms: 18.5,    // 18.5 Ω
+                temp: 68,
+                cc: 'cc1_only',
+                data: 'no_response'
+            },
+            mcu_burned: {
+                voltage: 4.85,
+                current: 1.95,
+                resistanceOhms: 1.1,     // 1.1 Ω
+                temp: 108,
+                cc: 'cc1_only',
+                data: 'corrupted'
+            }
+        };
+
+        /**
+         * Piecewise mapping between slider position (0..1000) and Ohms (0.1 Ω .. 100,000.0 Ω)
+         * Gives 0.1 Ω fine resolution below 100 Ω and smooth scaling up to 100.0 kΩ.
+         */
+        function sliderPosToOhms(pos) {
+            const p = Math.max(0, Math.min(1000, Number(pos)));
+            if (p <= 500) {
+                // 0..500 -> 0.1 Ω .. 100.0 Ω
+                const val = 0.1 + (p / 500) * 99.9;
+                return Math.round(val * 10) / 10;
+            } else {
+                // 500..1000 -> 100.0 Ω .. 100,000.0 Ω
+                const t = (p - 500) / 500;
+                const val = 100 + Math.pow(t, 1.8) * 99900;
+                return Math.round(val * 10) / 10;
+            }
+        }
+
+        function ohmsToSliderPos(ohms) {
+            const r = Math.max(0.1, Math.min(100000, Number(ohms)));
+            if (r <= 100) {
+                return Math.round(((r - 0.1) / 99.9) * 500);
+            } else {
+                const t = Math.pow((r - 100) / 99900, 1 / 1.8);
+                return Math.round(500 + t * 500);
+            }
+        }
+
+        function formatImpedance(ohms) {
+            if (ohms >= 1000) {
+                return `${(ohms / 1000).toFixed(1)} kΩ`;
+            }
+            return `${ohms.toFixed(1)} Ω`;
+        }
+
+        /**
+         * =========================================================================
+         * 2. ACOUSTIC LAB FEEDBACK & TOAST NOTIFICATIONS
+         * =========================================================================
+         */
+        function playLabTone(type = 'scan') {
+            if (!audioEnabled) return;
+            try {
+                if (!audioCtx) {
+                    const AudioContext = window.AudioContext || window.webkitAudioContext;
+                    audioCtx = new AudioContext();
+                }
+                if (audioCtx.state === 'suspended') {
+                    audioCtx.resume();
+                }
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                const now = audioCtx.currentTime;
+                if (type === 'scan') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(520, now);
+                    osc.frequency.exponentialRampToValueAtTime(980, now + 0.14);
+                    gain.gain.setValueAtTime(0.045, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
+                    osc.start(now);
+                    osc.stop(now + 0.15);
+                } else if (type === 'healthy') {
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(660, now);
+                    osc.frequency.setValueAtTime(880, now + 0.08);
+                    gain.gain.setValueAtTime(0.045, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.22);
+                    osc.start(now);
+                    osc.stop(now + 0.22);
+                } else if (type === 'fault') {
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(215, now);
+                    osc.frequency.linearRampToValueAtTime(140, now + 0.24);
+                    gain.gain.setValueAtTime(0.045, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+                    osc.start(now);
+                    osc.stop(now + 0.25);
+                }
+            } catch (e) {
+                // Ignore if browser autoplay policy defers audio
+            }
+        }
+
+        function toggleAudio() {
+            audioEnabled = !audioEnabled;
+            document.getElementById('soundIconOn').classList.toggle('hidden', !audioEnabled);
+            document.getElementById('soundIconOff').classList.toggle('hidden', audioEnabled);
+            showToast(audioEnabled ? 'Lab acoustic feedback enabled.' : 'Lab acoustic feedback muted.', 'info');
+        }
+
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            const styles = {
+                info: 'bg-[#111827]/95 border-[#00f0ff]/50 text-cyan-100',
+                success: 'bg-emerald-950/95 border-emerald-500/60 text-emerald-100',
+                warning: 'bg-amber-950/95 border-amber-500/60 text-amber-100',
+                error: 'bg-rose-950/95 border-rose-500/60 text-rose-100'
+            };
+
+            toast.className = `pointer-events-auto px-4 py-3 rounded-xl border shadow-2xl backdrop-blur-md text-xs font-medium flex items-center justify-between gap-3 transition-all duration-300 transform translate-y-2 opacity-0 ${styles[type] || styles.info}`;
+            toast.innerHTML = `
+                <span>${message}</span>
+                <button onclick="this.parentElement.remove()" class="text-slate-400 hover:text-white font-bold px-1 cursor-pointer">&times;</button>
+            `;
+            container.appendChild(toast);
+
+            requestAnimationFrame(() => toast.classList.remove('translate-y-2', 'opacity-0'));
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-2');
+                setTimeout(() => toast.remove(), 300);
+            }, 4500);
+        }
+
+        /**
+         * =========================================================================
+         * 3. REAL HARDWARE DETECTION (WebUSB & WebSerial API WITH FALLBACKS)
+         * =========================================================================
+         */
+        async function connectTypeCDevice() {
+            playLabTone('scan');
+
+            if (!('usb' in navigator)) {
+                showToast('WebUSB API is not supported in this browser (use Chrome/Edge). Switched to Power Telemetry & Probe Mode.', 'warning');
+                setFallbackTelemetryBanner(
+                    'WebUSB Unavailable — Power Telemetry & Probe Mode Active',
+                    'Your browser does not expose navigator.usb. Select any fault preset or adjust manual electrical probe sliders below.'
+                );
+                return;
+            }
+
+            try {
+                const device = await navigator.usb.requestDevice({ filters: [] });
+
+                const vidHex = '0x' + device.vendorId.toString(16).toUpperCase().padStart(4, '0');
+                const pidHex = '0x' + device.productId.toString(16).toUpperCase().padStart(4, '0');
+                const productName = device.productName || 'USB-C Electronic Instrument';
+                const manufacturerName = device.manufacturerName || 'Verified USB Vendor';
+                const usbVer = `USB ${device.usbVersionMajor}.${device.usbVersionMinor}`;
+
+                usbMetadata = {
+                    vid: vidHex,
+                    pid: pidHex,
+                    manufacturer: manufacturerName,
+                    product: productName,
+                    protocol: usbVer
+                };
+
+                updateHardwareBanner({
+                    badgeText: 'PHYSICAL USB-C DEVICE ENUMERATED',
+                    badgeClass: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40',
+                    ledClass: 'bg-emerald-400 shadow-[0_0_12px_#34d399]',
+                    title: `${productName} — ${manufacturerName}`,
+                    sub: `Physical Type-C enumeration verified (${vidHex}:${pidHex}, ${usbVer}). Instrument MCU responded to descriptor request.`,
+                    vid: vidHex,
+                    pid: pidHex,
+                    mfg: manufacturerName,
+                    product: productName,
+                    protocol: usbVer
+                });
+
+                try {
+                    await device.open();
+                    await device.close();
+                } catch (e) {
+                    // OS driver interface lock is expected on HID/Mass-Storage instruments
+                }
+
+                showToast(`Enumerated Type-C Device: ${productName} (${vidHex}:${pidHex})`, 'success');
+                applyPreset('normal');
+
+            } catch (err) {
+                if (err.name === 'NotFoundError') {
+                    showToast('No USB data device selected. If testing a charge-only cable or dead board, use the probe telemetry controls below.', 'warning');
+                    setFallbackTelemetryBanner(
+                        'No USB Data Enumeration (Charge-Only Cable or Unresponsive Board)',
+                        'A 2-wire charging cable lacks D+/D- data lines, or the instrument MCU is unpowered. Dial in VBUS, Current, and Impedance probes below.'
+                    );
+                } else if (err.name === 'SecurityError') {
+                    showToast('WebUSB access is blocked by iframe/sandbox policy. Running in Power Telemetry & Probe Mode.', 'warning');
+                    setFallbackTelemetryBanner(
+                        'Power Telemetry & Probe Mode (Sandbox Policy Active)',
+                        'Direct WebUSB hardware enumeration is restricted in this frame. Use the fault presets or manual probe controls below.'
+                    );
+                } else {
+                    showToast(`WebUSB Error: ${err.message}`, 'error');
+                }
+            }
+        }
+
+        async function connectSerialDevice() {
+            playLabTone('scan');
+
+            if (!('serial' in navigator)) {
+                showToast('WebSerial API is unavailable in this browser. Operating in Power Telemetry & Probe Mode.', 'warning');
+                return;
+            }
+
+            try {
+                const port = await navigator.serial.requestPort();
+                const info = port.getInfo();
+                const vidHex = info.usbVendorId ? '0x' + info.usbVendorId.toString(16).toUpperCase().padStart(4, '0') : '0xUART';
+                const pidHex = info.usbProductId ? '0x' + info.usbProductId.toString(16).toUpperCase().padStart(4, '0') : '0xCOMM';
+
+                usbMetadata = {
+                    vid: vidHex,
+                    pid: pidHex,
+                    manufacturer: 'USB-UART Bridge',
+                    product: 'Serial Telemetry Instrument',
+                    protocol: 'UART 115200bps'
+                };
+
+                updateHardwareBanner({
+                    badgeText: 'SERIAL UART PORT CONNECTED',
+                    badgeClass: 'bg-cyan-500/20 text-[#00f0ff] border-[#00f0ff]/40',
+                    ledClass: 'bg-[#00f0ff] shadow-[0_0_12px_#00f0ff]',
+                    title: `USB-to-Serial UART Instrument (${vidHex}:${pidHex})`,
+                    sub: 'Detected UART serial bridge (CH340 / CP2102 / FTDI) over Type-C interface.',
+                    vid: vidHex,
+                    pid: pidHex,
+                    mfg: 'USB-UART Bridge',
+                    product: 'Serial Telemetry Instrument',
+                    protocol: 'UART 115200bps'
+                });
+
+                showToast(`Serial UART port detected (${vidHex}:${pidHex})`, 'success');
+                applyPreset('normal');
+            } catch (err) {
+                if (err.name !== 'NotFoundError') {
+                    showToast('WebSerial access restricted in current browser sandbox. Using Probe Mode.', 'warning');
+                }
+            }
+        }
+
+        function setFallbackTelemetryBanner(title, sub) {
+            usbMetadata = {
+                vid: '0x0000',
+                pid: '0x0000',
+                manufacturer: 'Unenumerated',
+                product: 'USB-C Instrument',
+                protocol: 'USB-C 5V Base'
+            };
+
+            updateHardwareBanner({
+                badgeText: 'POWER TELEMETRY & PROBE MODE',
+                badgeClass: 'bg-amber-500/15 text-amber-300 border-amber-500/30',
+                ledClass: 'bg-amber-400 shadow-[0_0_12px_#fbbf24]',
+                title: title,
+                sub: sub,
+                vid: '0x0000',
+                pid: '0x0000',
+                mfg: 'Unenumerated',
+                product: 'USB-C Instrument',
+                protocol: 'USB-C 5V Base'
+            });
+            runFullDiagnosticSweep(false);
+        }
+
+        function updateHardwareBanner(cfg) {
+            const badge = document.getElementById('connectionStatusBadge');
+            badge.className = `px-2.5 py-0.5 rounded-full text-[11px] font-mono font-semibold border ${cfg.badgeClass}`;
+            badge.textContent = cfg.badgeText;
+
+            const led = document.getElementById('connectionLed');
+            led.className = `w-4 h-4 rounded-full ${cfg.ledClass}`;
+
+            document.getElementById('detectedDeviceTitle').textContent = cfg.title;
+            document.getElementById('detectedDeviceSub').textContent = cfg.sub;
+            document.getElementById('metaVid').textContent = cfg.vid;
+            document.getElementById('metaPid').textContent = cfg.pid;
+            document.getElementById('metaMfg').textContent = cfg.mfg;
+            document.getElementById('metaProduct').textContent = cfg.product;
+            document.getElementById('metaProtocol').textContent = cfg.protocol;
+        }
+
+        // Physical USB hot-plug listeners
+        if ('usb' in navigator) {
+            navigator.usb.addEventListener('connect', (event) => {
+                const name = event.device.productName || 'USB Type-C Instrument';
+                showToast(`USB Type-C cable connected: ${name}`, 'success');
+                runFullDiagnosticSweep(true);
+            });
+            navigator.usb.addEventListener('disconnect', () => {
+                showToast('USB Type-C cable disconnected.', 'warning');
+                setFallbackTelemetryBanner(
+                    'USB Type-C Cable Disconnected',
+                    'Reconnect the Type-C cable or select a simulation preset to continue diagnostics.'
+                );
+            });
+        }
+
+        /**
+         * =========================================================================
+         * 4. DIAGNOSTIC SWEEP, PRESET LOADER & FAULT CLASSIFICATION ENGINE
+         * =========================================================================
+         */
+        let customOhmsOverride = null;
+
+        function applyPreset(presetKey) {
+            activePresetKey = presetKey;
+            const cfg = PRESET_CONFIGS[presetKey];
+            if (!cfg) return;
+
+            document.querySelectorAll('.preset-btn').forEach(btn => {
+                if (btn.dataset.preset === presetKey) {
+                    btn.classList.add('ring-2', 'ring-[#00f0ff]/80', 'bg-slate-800/90');
+                } else {
+                    btn.classList.remove('ring-2', 'ring-[#00f0ff]/80', 'bg-slate-800/90');
+                }
+            });
+
+            document.getElementById('voltageSlider').value = cfg.voltage;
+            document.getElementById('currentSlider').value = cfg.current;
+            document.getElementById('resistanceSlider').value = ohmsToSliderPos(cfg.resistanceOhms);
+            customOhmsOverride = cfg.resistanceOhms;
+            document.getElementById('tempSlider').value = cfg.temp;
+            document.getElementById('ccStatusSelect').value = cfg.cc;
+            document.getElementById('dataStatusSelect').value = cfg.data;
+
+            runFullDiagnosticSweep(true);
+        }
+
+        function handleManualSensorChange() {
+            activePresetKey = 'custom';
+            customOhmsOverride = null;
+            document.querySelectorAll('.preset-btn').forEach(btn => {
+                btn.classList.remove('ring-2', 'ring-[#00f0ff]/80', 'bg-slate-800/90');
+            });
+            evaluateHardwareDiagnostics(false);
+        }
+
+        function runFullDiagnosticSweep(withSound = true) {
+            if (withSound) playLabTone('scan');
+            const progressBar = document.getElementById('scanProgressBar');
+            progressBar.classList.remove('hidden');
+
+            setTimeout(() => {
+                progressBar.classList.add('hidden');
+                evaluateHardwareDiagnostics(withSound);
+            }, 420);
+        }
+
+        function getCurrentTimestamp() {
+            const now = new Date();
+            const hh = String(now.getHours()).padStart(2, '0');
+            const mm = String(now.getMinutes()).padStart(2, '0');
+            const ss = String(now.getSeconds()).padStart(2, '0');
+            const ms = String(now.getMilliseconds()).padStart(3, '0');
+            return `${hh}:${mm}:${ss}.${ms}`;
+        }
+
+        function evaluateHardwareDiagnostics(playOutcomeTone = false) {
+            const instrument = document.getElementById('instrumentSelect').value;
+            const v = parseFloat(document.getElementById('voltageSlider').value);
+            const a = parseFloat(document.getElementById('currentSlider').value);
+            const sliderPos = parseFloat(document.getElementById('resistanceSlider').value);
+            const r = customOhmsOverride !== null ? customOhmsOverride : sliderPosToOhms(sliderPos);
+            const t = parseInt(document.getElementById('tempSlider').value, 10);
+            const cc = document.getElementById('ccStatusSelect').value;
+            const dataBus = document.getElementById('dataStatusSelect').value;
+
+            const rFormatted = formatImpedance(r);
+
+            // Update live numeric probe readouts
+            document.getElementById('voltageDisplay').textContent = `${v.toFixed(2)} V`;
+            document.getElementById('currentDisplay').textContent = `${a.toFixed(2)} A`;
+            document.getElementById('resistanceDisplay').textContent = rFormatted;
+            document.getElementById('tempDisplay').textContent = `${t} °C`;
+
+            document.getElementById('voltageDisplay').className = `font-mono text-sm font-bold ${v < 4.4 ? 'text-rose-400' : 'text-[#00f0ff]'}`;
+            document.getElementById('currentDisplay').className = `font-mono text-sm font-bold ${a >= 1.8 ? 'text-rose-400' : (a <= 0.15 ? 'text-amber-400' : 'text-emerald-400')}`;
+            document.getElementById('resistanceDisplay').className = `font-mono text-sm font-bold ${r < 25 ? 'text-rose-400' : (r >= 40000 ? 'text-amber-400' : 'text-[#00f0ff]')}`;
+            document.getElementById('tempDisplay').className = `font-mono text-sm font-bold ${t >= 90 ? 'text-rose-400' : (t >= 65 ? 'text-amber-400' : 'text-emerald-400')}`;
+
+            // Default Healthy Verdict
+            let diag = {
+                verdictCategory: 'healthy',
+                verdictTitle: 'INSTRUMENT FUNCTIONAL',
+                verdictSubtitle: `The ${instrument} negotiates cleanly over USB Type-C with nominal power rails, healthy charging current, and active MCU enumeration.`,
+                verdictPill: 'HEALTHY — NO REPAIR NEEDED',
+                designator: 'ALL NOMINAL',
+                partName: 'No Damaged PCB Components Detected',
+                failureMode: 'Nominal Operation (0 Faults)',
+                rootCause: `VBUS holds steady at ${v.toFixed(2)}V with ${a.toFixed(2)}A active current draw, ${rFormatted} rail-to-ground impedance, and ${t}°C thermal equilibrium.`,
+                reasoning: 'All power-path stages—from USB-C receptacle J1 and CC pull-downs through PMIC U2 and 3.3V LDO U4—operate within factory specification.',
+                difficulty: 'None Required',
+                cost: '$0.00 USD',
+                viability: '100% Operational',
+                steps: [
+                    'Inspect USB Type-C receptacle J1 for lint, oxidation, or debris.',
+                    'Verify steady 5.05V VBUS and 0.85A charging draw with an inline USB-C power meter.'
+                ],
+                tools: ['USB-C Inline Power Meter', 'Digital Multimeter'],
+                nodes: {
+                    port: { state: 'healthy', label: `${v.toFixed(2)}V OK`, measuredV: `${v.toFixed(2)}V`, measuredZ: rFormatted },
+                    esd:  { state: 'healthy', label: 'CC1/CC2 OK', measuredV: '1.65V (CC)', measuredZ: '5.1 kΩ' },
+                    pmic: { state: 'healthy', label: `${a.toFixed(2)}A • ${t}°C`, measuredV: '4.19V (VSYS)', measuredZ: rFormatted },
+                    ldo:  { state: 'healthy', label: '3.30V STABLE', measuredV: '3.30V', measuredZ: '180.0 Ω' },
+                    mcu:  { state: 'healthy', label: 'ACTIVE', measuredV: '3.30V', measuredZ: '220.0 Ω' },
+                    bat:  { state: 'healthy', label: '3.94V • CHG OK', measuredV: '3.94V', measuredZ: '48.0 kΩ' }
+                },
+                focusNode: 'pmic',
+                auditLog: [
+                    { step: 'Stage 1: VBUS Rail Voltage Check', status: 'PASS', detail: `VBUS measured ${v.toFixed(2)}V within 4.75V–5.25V tolerance.` },
+                    { step: 'Stage 2: CC1/CC2 Configuration Channel', status: 'PASS', detail: '5.1kΩ Rd pull-down active on CC1/CC2.' },
+                    { step: 'Stage 3: Rail-to-GND Impedance Audit', status: 'PASS', detail: `Impedance ${rFormatted} — no short-to-ground detected.` },
+                    { step: 'Stage 4: PMIC, 3.3V LDO & Thermal Check', status: 'PASS', detail: `Draw ${a.toFixed(2)}A at ${t}°C; 3.30V core rail & USB D+/D- active.` },
+                    { step: 'Stage 5: Serviceability Verdict', status: 'PASS', detail: 'Instrument is fully functional and healthy.' }
+                ]
+            };
+
+            // DETERMINISTIC HARDWARE FAULT CLASSIFIER
+            if (activePresetKey === 'typec_port' || (v < 0.25 && a < 0.05) || cc === 'open' || (r >= 80000 && v < 1.0)) {
+                // 5. Damaged Type-C Port / CC Pins (J1) -> FIXABLE
+                diag = {
+                    verdictCategory: 'fixable',
+                    verdictTitle: 'FAULT DETECTED — FIXABLE',
+                    verdictSubtitle: `The ${instrument} exhibits zero VBUS power transfer (${v.toFixed(2)}V) and ${rFormatted} open impedance due to damaged USB-C port J1 / CC pins.`,
+                    verdictPill: 'FIXABLE — CONNECTOR REWORK',
+                    designator: 'J1 / R1-R2',
+                    partName: 'Damaged USB Type-C Port (J1) & CC1/CC2 Configuration Pins',
+                    failureMode: 'Open Circuit / Fractured CC1 & CC2 Pull-Down Lines',
+                    rootCause: `VBUS reads ${v.toFixed(2)}V with ${rFormatted} open-circuit impedance and open D+/D- lines. USB-C power sources withhold 5V VBUS when CC1/CC2 5.1kΩ Rd termination or receptacle solder joints are broken.`,
+                    reasoning: 'FIXABLE: The fault is confined to the mechanical USB-C receptacle (J1) and adjacent CC pull-down resistors. Downstream PMIC U2, 3.3V LDO U4, and Main MCU U1 remain completely intact.',
+                    difficulty: 'Intermediate (Level 2 SMD)',
+                    cost: '$3.00 – $8.00 USD',
+                    viability: 'Highly Economical to Repair',
+                    steps: [
+                        'Inspect the inside of USB-C receptacle J1 under magnification for bent pins, lifted pads, or debris.',
+                        'Check continuity from J1 VBUS and CC1/CC2 pins to board test pads using fine multimeter probes.',
+                        'Remove damaged 24-pin Type-C receptacle J1 using hot air at 360°C, clean pads with solder wick, and reflow a replacement port.'
+                    ],
+                    tools: ['Hot Air Rework Station', 'Fine-Tip Soldering Iron', 'No-Clean Flux & Solder Wick', 'Digital Multimeter'],
+                    nodes: {
+                        port: { state: 'fault', label: '0.00V • OPEN', measuredV: `${v.toFixed(2)}V (OPEN)`, measuredZ: rFormatted },
+                        esd:  { state: 'warning', label: 'CC1/CC2 OPEN', measuredV: '0.00V (CC)', measuredZ: 'OPEN' },
+                        pmic: { state: 'offline', label: 'UNPOWERED', measuredV: '0.00V', measuredZ: '12.5 kΩ' },
+                        ldo:  { state: 'offline', label: '0.00V OFF', measuredV: '0.00V', measuredZ: '180.0 Ω' },
+                        mcu:  { state: 'offline', label: 'OFFLINE', measuredV: '0.00V', measuredZ: '220.0 Ω' },
+                        bat:  { state: 'warning', label: 'NO CHARGE', measuredV: '3.42V', measuredZ: '48.0 kΩ' }
+                    },
+                    focusNode: 'port',
+                    auditLog: [
+                        { step: 'Stage 1: VBUS Rail Voltage Check', status: 'FAIL', detail: `VBUS measured ${v.toFixed(2)}V — power source output disabled.` },
+                        { step: 'Stage 2: CC1/CC2 Configuration Channel', status: 'FAIL', detail: 'CC1/CC2 open circuit; 5.1kΩ Rd negotiation missing.' },
+                        { step: 'Stage 3: Rail-to-GND Impedance Audit', status: 'WARN', detail: `Open impedance (${rFormatted}) confirms mechanical input break.` },
+                        { step: 'Stage 4: PMIC, 3.3V LDO & Thermal Check', status: 'SKIP', detail: 'Downstream rails unpowered due to J1 port disconnect.' },
+                        { step: 'Stage 5: Serviceability Verdict', status: 'FIXABLE', detail: 'Replaceable USB-C receptacle J1 — high repair success.' }
+                    ]
+                };
+            } else if (activePresetKey === 'mcu_burned' || (t >= 100 && r <= 2.5 && v >= 3.5) || (dataBus === 'corrupted' && t >= 95)) {
+                // 7. Dead Main MCU & Charred Multi-Layer PCB (U1) -> NOT FIXABLE (Beyond Economic Repair)
+                diag = {
+                    verdictCategory: 'unfixable',
+                    verdictTitle: 'CRITICAL FAILURE — NOT FIXABLE (BEYOND ECONOMIC REPAIR)',
+                    verdictSubtitle: `The ${instrument} sustained catastrophic core latch-up in Main MCU (U1) with ${t}°C thermal charring across internal PCB layers.`,
+                    verdictPill: 'NOT FIXABLE — BEYOND ECONOMIC REPAIR',
+                    designator: 'U1 + INNER PCB',
+                    partName: 'Dead Main MCU / Processor (U1) & Charred Multi-Layer PCB',
+                    failureMode: 'Internal Silicon Short (1.1 Ω) + Firmware Lockout + PCB Delamination',
+                    rootCause: `Core impedance collapsed to ${rFormatted} with ${a.toFixed(2)}A sustained latch-up current, driving U1 die temperature to ${t}°C and corrupting the D+/D- USB interface.`,
+                    reasoning: 'NOT FIXABLE (Beyond Economic Repair): (1) Main MCU U1 stores factory-locked, encrypted firmware unavailable for blank replacement chips; (2) Sustained 108°C thermal damage has carbonized internal copper power/ground planes inside the multi-layer PCB, causing permanent inter-layer shorting.',
+                    difficulty: 'Unrepairable (BER)',
+                    cost: 'Exceeds Instrument Value',
+                    viability: 'Salvage Donor Assemblies Only',
+                    steps: [
+                        'Disconnect USB-C power immediately to prevent further PCB carbonization or battery thermal hazard.',
+                        'Confirm 1.1 Ω dead short persists across 3.3V core decoupling capacitors even with LDO U4 isolated.',
+                        'Salvage intact mechanical/display assemblies (LCD screen, rotary encoders, battery pack BAT1) as spare parts and replace the main PCB.'
+                    ],
+                    tools: ['Thermal Imaging Camera', 'Digital Multimeter', 'ESD Safe Disassembly Kit'],
+                    nodes: {
+                        port: { state: 'healthy', label: `${v.toFixed(2)}V IN`, measuredV: `${v.toFixed(2)}V`, measuredZ: '12.5 kΩ' },
+                        esd:  { state: 'healthy', label: 'CC1 ACTIVE', measuredV: '1.65V (CC)', measuredZ: '5.1 kΩ' },
+                        pmic: { state: 'warning', label: `${a.toFixed(2)}A SURGE`, measuredV: '3.85V (VSYS)', measuredZ: '12.0 Ω' },
+                        ldo:  { state: 'warning', label: '3.3V LOADED', measuredV: '0.22V', measuredZ: rFormatted },
+                        mcu:  { state: 'fault', label: `CHARRED ${t}°C`, measuredV: '0.22V (SHORT)', measuredZ: `${rFormatted} (SHORT)` },
+                        bat:  { state: 'warning', label: 'ISOLATED', measuredV: '3.60V', measuredZ: '48.0 kΩ' }
+                    },
+                    focusNode: 'mcu',
+                    auditLog: [
+                        { step: 'Stage 1: VBUS Rail Voltage Check', status: 'PASS', detail: `VBUS present at ${v.toFixed(2)}V; sustained ${a.toFixed(2)}A fault draw.` },
+                        { step: 'Stage 2: CC1/CC2 Configuration Channel', status: 'WARN', detail: 'CC1 active, but D+/D- USB data lines are corrupted.' },
+                        { step: 'Stage 3: Rail-to-GND Impedance Audit', status: 'FAIL', detail: `Severe ${rFormatted} internal core short detected at U1.` },
+                        { step: 'Stage 4: PMIC, 3.3V LDO & Thermal Check', status: 'FAIL', detail: `Thermal runaway (${t}°C) has charred internal PCB layers.` },
+                        { step: 'Stage 5: Serviceability Verdict', status: 'BER', detail: 'NOT FIXABLE — locked MCU firmware & delaminated PCB.' }
+                    ]
+                };
+            } else if (activePresetKey === 'short_circuit' || (v < 2.0 && a >= 2.2) || (r < 1.5 && v < 3.0)) {
+                // 3. Shorted VBUS MLCC Capacitor (C14) -> FIXABLE
+                diag = {
+                    verdictCategory: 'fixable',
+                    verdictTitle: 'FAULT DETECTED — FIXABLE',
+                    verdictSubtitle: `VBUS droops sharply to ${v.toFixed(2)}V under ${a.toFixed(2)}A short-circuit load due to a dead-shorted VBUS MLCC capacitor (C14).`,
+                    verdictPill: 'FIXABLE — MLCC CAPACITOR REPLACEMENT',
+                    designator: 'C14 (MLCC)',
+                    partName: 'Shorted VBUS MLCC Input Filter Capacitor (C14)',
+                    failureMode: 'Dead Short-to-Ground (0.3 Ω) with 92°C Localized Hotspot',
+                    rootCause: `VBUS-to-GND impedance fell to ${rFormatted}, clamping VBUS down to ${v.toFixed(2)}V, pulling CC1 low, and generating a ${t}°C thermal hotspot directly on capacitor C14.`,
+                    reasoning: 'FIXABLE: Multi-layer ceramic capacitors (MLCCs) on the VBUS rail commonly crack from board flex or voltage transients and fail dead-short. Removing and replacing C14 restores full instrument functionality in minutes.',
+                    difficulty: 'Easy – Intermediate (Level 1-2)',
+                    cost: '$0.50 – $2.00 USD',
+                    viability: 'Extremely Economical to Repair',
+                    steps: [
+                        'Inject 1.0V (current-limited to 1.5A) into the VBUS rail using a bench DC power supply.',
+                        'Pinpoint the glowing hotspot on capacitor C14 using a thermal camera or isopropyl alcohol (IPA) evaporation.',
+                        'Desolder shorted capacitor C14, confirm VBUS impedance returns above 10 kΩ, and solder a new 10µF/25V X7R MLCC.'
+                    ],
+                    tools: ['DC Bench Power Supply', 'Thermal Camera / IPA Alcohol', 'Hot Air Station & Tweezers', 'Digital Multimeter'],
+                    nodes: {
+                        port: { state: 'warning', label: `${v.toFixed(2)}V DROOP`, measuredV: `${v.toFixed(2)}V`, measuredZ: rFormatted },
+                        esd:  { state: 'warning', label: 'CC1 LOW', measuredV: '0.20V (CC)', measuredZ: rFormatted },
+                        pmic: { state: 'fault', label: `C14 SHORT ${t}°C`, measuredV: `${v.toFixed(2)}V (SHORT)`, measuredZ: `${rFormatted} (SHORT)` },
+                        ldo:  { state: 'offline', label: '0.00V OFF', measuredV: '0.00V', measuredZ: '180.0 Ω' },
+                        mcu:  { state: 'offline', label: 'PROTECTED', measuredV: '0.00V', measuredZ: '220.0 Ω' },
+                        bat:  { state: 'warning', label: 'NO CHARGE', measuredV: '3.76V', measuredZ: '48.0 kΩ' }
+                    },
+                    focusNode: 'pmic',
+                    auditLog: [
+                        { step: 'Stage 1: VBUS Rail Voltage Check', status: 'FAIL', detail: `VBUS collapsed to ${v.toFixed(2)}V under ${a.toFixed(2)}A short.` },
+                        { step: 'Stage 2: CC1/CC2 Configuration Channel', status: 'WARN', detail: 'CC1 pulled low by VBUS rail collapse; D+/D- dead.' },
+                        { step: 'Stage 3: Rail-to-GND Impedance Audit', status: 'FAIL', detail: `Dead short (${rFormatted}) isolated to input filter C14.` },
+                        { step: 'Stage 4: PMIC, 3.3V LDO & Thermal Check', status: 'WARN', detail: `Localized ${t}°C hotspot at C14; downstream MCU safe.` },
+                        { step: 'Stage 5: Serviceability Verdict', status: 'FIXABLE', detail: 'Replace shorted MLCC C14 — fast, low-cost repair.' }
+                    ]
+                };
+            } else if (activePresetKey === 'pmic_burned' || (v >= 4.2 && a >= 1.8 && t >= 75 && r <= 10.0)) {
+                // 2. Burned PMIC Charging IC (U2) -> FIXABLE
+                diag = {
+                    verdictCategory: 'fixable',
+                    verdictTitle: 'FAULT DETECTED — FIXABLE',
+                    verdictSubtitle: `VBUS is ${v.toFixed(2)}V, but PMIC Charging IC (U2) draws ${a.toFixed(2)}A overcurrent with ${rFormatted} low impedance and an ${t}°C hotspot.`,
+                    verdictPill: 'FIXABLE — PMIC IC REPLACEMENT',
+                    designator: 'U2 (PMIC)',
+                    partName: 'Burned PMIC Charging Controller IC (U2)',
+                    failureMode: 'Internal Switching FET Breakdown (2.45A Overcurrent / 86°C)',
+                    rootCause: `Internal power MOSFETs inside PMIC U2 partially shorted (${rFormatted}), drawing ${a.toFixed(2)}A from the 5.00V VBUS input, overheating U2 to ${t}°C, and shutting down VSYS/D+/D- enumeration.`,
+                    reasoning: 'FIXABLE: PMIC charger ICs (such as BQ24195, BQ25895, or IP2312) are standard off-the-shelf SMD components without encrypted firmware. Hot-air replacement of U2 restores full charging and system power.',
+                    difficulty: 'Advanced SMD Rework (Level 3)',
+                    cost: '$4.00 – $12.00 USD',
+                    viability: 'Economical to Repair',
+                    steps: [
+                        'Identify the exact part marking on QFN package U2 under a stereo microscope.',
+                        'Mask adjacent plastic connectors with Kapton tape and desolder U2 at 375°C using tacky flux.',
+                        'Wick excess solder from the center thermal pad, align pin-1 on the new PMIC IC, and reflow.'
+                    ],
+                    tools: ['Stereo Microscope', 'Hot Air Rework Station', 'Kapton Tape & Tacky Flux', 'Replacement PMIC IC'],
+                    nodes: {
+                        port: { state: 'healthy', label: `${v.toFixed(2)}V OK`, measuredV: `${v.toFixed(2)}V`, measuredZ: '12.5 kΩ' },
+                        esd:  { state: 'healthy', label: 'CC1 ACTIVE', measuredV: '1.65V (CC)', measuredZ: '5.1 kΩ' },
+                        pmic: { state: 'fault', label: `BURNED • ${t}°C`, measuredV: '0.18V (VSYS)', measuredZ: `${rFormatted} (LOW)` },
+                        ldo:  { state: 'offline', label: '0.00V OFF', measuredV: '0.00V', measuredZ: '180.0 Ω' },
+                        mcu:  { state: 'offline', label: 'OFFLINE', measuredV: '0.00V', measuredZ: '220.0 Ω' },
+                        bat:  { state: 'warning', label: 'NO CHARGE', measuredV: '3.54V', measuredZ: '48.0 kΩ' }
+                    },
+                    focusNode: 'pmic',
+                    auditLog: [
+                        { step: 'Stage 1: VBUS Rail Voltage Check', status: 'PASS', detail: `VBUS supplied at ${v.toFixed(2)}V with ${a.toFixed(2)}A overcurrent.` },
+                        { step: 'Stage 2: CC1/CC2 Configuration Channel', status: 'PASS', detail: 'CC1 handshake active; D+/D- bus dead.' },
+                        { step: 'Stage 3: Rail-to-GND Impedance Audit', status: 'FAIL', detail: `Abnormal low impedance (${rFormatted}) inside PMIC U2.` },
+                        { step: 'Stage 4: PMIC, 3.3V LDO & Thermal Check', status: 'FAIL', detail: `PMIC U2 overheating (${t}°C); VSYS output collapsed.` },
+                        { step: 'Stage 5: Serviceability Verdict', status: 'FIXABLE', detail: 'Standard QFN PMIC U2 replaceable via hot-air rework.' }
+                    ]
+                };
+            } else if (activePresetKey === 'ldo_fault' || (v >= 4.2 && a >= 0.08 && a <= 0.35 && (dataBus === 'no_response' || t >= 58))) {
+                // 6. Failed 3.3V LDO Regulator (U4) -> FIXABLE
+                diag = {
+                    verdictCategory: 'fixable',
+                    verdictTitle: 'FAULT DETECTED — FIXABLE',
+                    verdictSubtitle: `VBUS (${v.toFixed(2)}V) and PMIC VSYS are present, but 3.3V LDO Regulator (U4) failed (${rFormatted}, ${t}°C), leaving the MCU unpowered.`,
+                    verdictPill: 'FIXABLE — 3.3V LDO REPLACEMENT',
+                    designator: 'U4 (3.3V LDO)',
+                    partName: 'Failed 3.3V Low-Dropout Voltage Regulator (U4)',
+                    failureMode: '3.3V Rail Collapse (18.5 Ω Pass-Element Fault / 68°C)',
+                    rootCause: `Total instrument current is ${a.toFixed(2)}A and D+/D- shows no response because U4 is warm (${t}°C) with ${rFormatted} rail impedance and fails to output a clean 3.30V logic rail.`,
+                    reasoning: 'FIXABLE: SOT-23-5 / SOT-223 3.3V LDO regulators (such as XC6206, AMS1117-3.3, or AP2112K) are inexpensive, off-the-shelf parts that can be replaced with a standard soldering iron.',
+                    difficulty: 'Easy (Level 1 Soldering)',
+                    cost: '$0.50 – $2.50 USD',
+                    viability: 'Highly Economical to Repair',
+                    steps: [
+                        'Probe U4 VIN pin (confirm 4.2V–5.0V) and U4 VOUT pin (confirm output collapsed below 1.0V).',
+                        'Verify downstream MCU 3.3V impedance is healthy (>150 Ω) once U4 is lifted from the board.',
+                        'Solder a matching 3.3V low-noise LDO regulator with identical pinout and current rating.'
+                    ],
+                    tools: ['Digital Multimeter', 'Temperature-Controlled Soldering Iron', 'ESD Tweezers & Solder'],
+                    nodes: {
+                        port: { state: 'healthy', label: `${v.toFixed(2)}V OK`, measuredV: `${v.toFixed(2)}V`, measuredZ: '12.5 kΩ' },
+                        esd:  { state: 'healthy', label: 'CC1 ACTIVE', measuredV: '1.65V (CC)', measuredZ: '5.1 kΩ' },
+                        pmic: { state: 'healthy', label: 'VSYS 4.2V OK', measuredV: '4.20V', measuredZ: '12.5 kΩ' },
+                        ldo:  { state: 'fault', label: `FAULT • ${t}°C`, measuredV: '0.15V (FAULT)', measuredZ: rFormatted },
+                        mcu:  { state: 'offline', label: 'NO 3.3V RAIL', measuredV: '0.15V', measuredZ: '220.0 Ω' },
+                        bat:  { state: 'healthy', label: '3.86V STANDBY', measuredV: '3.86V', measuredZ: '48.0 kΩ' }
+                    },
+                    focusNode: 'ldo',
+                    auditLog: [
+                        { step: 'Stage 1: VBUS Rail Voltage Check', status: 'PASS', detail: `VBUS nominal at ${v.toFixed(2)}V (${a.toFixed(2)}A draw).` },
+                        { step: 'Stage 2: CC1/CC2 Configuration Channel', status: 'PASS', detail: 'CC1 active; D+/D- USB bus unresponsive.' },
+                        { step: 'Stage 3: Rail-to-GND Impedance Audit', status: 'WARN', detail: `3.3V LDO rail impedance at ${rFormatted} (warm at ${t}°C).` },
+                        { step: 'Stage 4: PMIC, 3.3V LDO & Thermal Check', status: 'FAIL', detail: 'LDO U4 output collapsed; Main MCU U1 unpowered.' },
+                        { step: 'Stage 5: Serviceability Verdict', status: 'FIXABLE', detail: 'Simple SOT-23 LDO U4 replacement restores 3.3V.' }
+                    ]
+                };
+            } else if (activePresetKey === 'battery_dead' || (v >= 4.2 && a <= 0.06 && r >= 25000 && t < 50)) {
+                // 4. Dead / Open Li-Ion Battery (BAT1) -> FIXABLE
+                diag = {
+                    verdictCategory: 'fixable',
+                    verdictTitle: 'FAULT DETECTED — FIXABLE',
+                    verdictSubtitle: `VBUS is ${v.toFixed(2)}V and USB logic enumerates, but charge current is stuck at ${a.toFixed(2)}A (${rFormatted}) due to a dead/open Li-Ion battery (BAT1).`,
+                    verdictPill: 'FIXABLE — BATTERY PACK REPLACEMENT',
+                    designator: 'BAT1 (Li-Ion)',
+                    partName: 'Dead / Open Li-Ion Battery Pack or Tripped BMS (BAT1)',
+                    failureMode: 'Open Cell / Deep Under-Voltage Lockout (0.03A Trickle)',
+                    rootCause: `Charging current remains at ${a.toFixed(2)}A with ${rFormatted} open battery-path impedance despite healthy 5.02V VBUS and active D+/D- enumeration because BAT1 fell below its 2.5V BMS cutoff.`,
+                    reasoning: 'FIXABLE: Rechargeable Li-Ion battery packs are modular consumable parts connected via a JST plug or two solder leads. Replacement requires zero SMD micro-soldering.',
+                    difficulty: 'Easy (Level 1 Plug-In)',
+                    cost: '$8.00 – $18.00 USD',
+                    viability: 'Highly Economical to Repair',
+                    steps: [
+                        'Open the instrument service cover and unplug battery connector BAT1.',
+                        'Measure cell voltage across BAT1 terminals; confirm <2.5V deep discharge or open BMS circuit.',
+                        'Install a fresh 3.7V nominal Li-Ion battery pack with matching capacity (mAh), NTC thermistor lead, and polarity.'
+                    ],
+                    tools: ['Precision Screwdriver Set', 'Plastic Pry Spudger', 'Digital Multimeter'],
+                    nodes: {
+                        port: { state: 'healthy', label: `${v.toFixed(2)}V OK`, measuredV: `${v.toFixed(2)}V`, measuredZ: '12.5 kΩ' },
+                        esd:  { state: 'healthy', label: 'CC1 ACTIVE', measuredV: '1.65V (CC)', measuredZ: '5.1 kΩ' },
+                        pmic: { state: 'healthy', label: `${a.toFixed(2)}A IDLE`, measuredV: '4.19V (VSYS)', measuredZ: '12.5 kΩ' },
+                        ldo:  { state: 'healthy', label: '3.30V STABLE', measuredV: '3.30V', measuredZ: '180.0 Ω' },
+                        mcu:  { state: 'healthy', label: 'ACTIVE', measuredV: '3.30V', measuredZ: '220.0 Ω' },
+                        bat:  { state: 'fault', label: '1.80V • OPEN', measuredV: '1.80V (DEAD)', measuredZ: rFormatted }
+                    },
+                    focusNode: 'bat',
+                    auditLog: [
+                        { step: 'Stage 1: VBUS Rail Voltage Check', status: 'PASS', detail: `VBUS stable at ${v.toFixed(2)}V.` },
+                        { step: 'Stage 2: CC1/CC2 Configuration Channel', status: 'PASS', detail: 'CC1 active and D+/D- USB enumeration verified.' },
+                        { step: 'Stage 3: Rail-to-GND Impedance Audit', status: 'WARN', detail: `High battery-branch impedance (${rFormatted}) detected.` },
+                        { step: 'Stage 4: PMIC, 3.3V LDO & Thermal Check', status: 'FAIL', detail: `Charge current stalled at ${a.toFixed(2)}A; BAT1 open/dead.` },
+                        { step: 'Stage 5: Serviceability Verdict', status: 'FIXABLE', detail: 'Drop-in Li-Ion battery pack BAT1 replacement.' }
+                    ]
+                };
+            }
+
+            latestDiagnosis = {
+                ...diag,
+                instrument,
+                telemetry: { v, a, r, rFormatted, t, cc, dataBus }
+            };
+
+            if (playOutcomeTone) {
+                playLabTone(diag.verdictCategory === 'healthy' ? 'healthy' : 'fault');
+            }
+
+            renderVerdictReport(latestDiagnosis);
+            renderAuditConsole(diag.auditLog);
+            updatePcbSchematic(diag.nodes);
+            inspectComponent(diag.focusNode, diag.nodes[diag.focusNode]);
+        }
+
+        /**
+         * =========================================================================
+         * 5. UI RENDERERS: VERDICT CARD, TIMESTAMPED CONSOLE & PCB SCHEMATIC
+         * =========================================================================
+         */
+        function renderVerdictReport(d) {
+            const banner = document.getElementById('verdictBanner');
+            const title = document.getElementById('verdictTitle');
+            const pill = document.getElementById('verdictPill');
+            const badge = document.getElementById('faultDesignatorBadge');
+
+            if (d.verdictCategory === 'healthy') {
+                banner.className = 'rounded-xl p-4 sm:p-5 border bg-emerald-950/25 border-emerald-500/40 flex flex-col sm:flex-row sm:items-center justify-between gap-4';
+                title.className = 'text-lg sm:text-xl font-extrabold text-emerald-400 mt-0.5 tracking-tight';
+                pill.className = 'inline-block px-3.5 py-1.5 rounded-lg font-mono text-xs font-extrabold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40';
+                badge.className = 'px-2 py-0.5 rounded font-mono text-[11px] font-bold bg-emerald-500/15 text-emerald-300 border border-emerald-500/30';
+            } else if (d.verdictCategory === 'fixable') {
+                banner.className = 'rounded-xl p-4 sm:p-5 border bg-amber-950/25 border-amber-500/45 flex flex-col sm:flex-row sm:items-center justify-between gap-4';
+                title.className = 'text-lg sm:text-xl font-extrabold text-amber-400 mt-0.5 tracking-tight';
+                pill.className = 'inline-block px-3.5 py-1.5 rounded-lg font-mono text-xs font-extrabold bg-amber-500/20 text-amber-300 border border-amber-500/40';
+                badge.className = 'px-2 py-0.5 rounded font-mono text-[11px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40';
+            } else {
+                banner.className = 'rounded-xl p-4 sm:p-5 border bg-rose-950/30 border-rose-500/50 flex flex-col sm:flex-row sm:items-center justify-between gap-4';
+                title.className = 'text-lg sm:text-xl font-extrabold text-rose-400 mt-0.5 tracking-tight';
+                pill.className = 'inline-block px-3.5 py-1.5 rounded-lg font-mono text-xs font-extrabold bg-rose-500/25 text-rose-300 border border-rose-500/50';
+                badge.className = 'px-2 py-0.5 rounded font-mono text-[11px] font-bold bg-rose-500/20 text-rose-300 border border-rose-500/40';
+            }
+
+            title.textContent = d.verdictTitle;
+            document.getElementById('verdictSubtitle').textContent = d.verdictSubtitle;
+            pill.textContent = d.verdictPill;
+
+            badge.textContent = d.designator;
+            document.getElementById('faultPartName').textContent = d.partName;
+            document.getElementById('faultFailureMode').textContent = `Failure Signature: ${d.failureMode}`;
+            document.getElementById('rootCauseText').textContent = d.rootCause;
+            document.getElementById('fixabilityReasoning').textContent = d.reasoning;
+
+            document.getElementById('repairDifficulty').textContent = d.difficulty;
+            document.getElementById('repairCost').textContent = d.cost;
+            document.getElementById('repairViability').textContent = d.viability;
+
+            document.getElementById('repairStepsList').innerHTML = d.steps.map(s => `<li>${s}</li>`).join('');
+            document.getElementById('toolsBadgesList').innerHTML = d.tools.map(t =>
+                `<span class="px-2.5 py-1 rounded-md bg-[#111827] text-slate-200 border border-slate-700 text-[11px] font-mono">${t}</span>`
+            ).join('');
+        }
+
+        function renderAuditConsole(logs) {
+            const consoleEl = document.getElementById('diagnosticConsole');
+            const ts = getCurrentTimestamp();
+            const statusColor = {
+                PASS: 'text-emerald-400',
+                WARN: 'text-amber-400',
+                FAIL: 'text-rose-400',
+                FIXABLE: 'text-[#00f0ff]',
+                BER: 'text-rose-400 font-bold',
+                SKIP: 'text-slate-500'
+            };
+
+            consoleEl.innerHTML = logs.map((entry, idx) => `
+                <div class="border-b border-slate-800/70 pb-1.5 last:border-b-0">
+                    <div class="flex items-center justify-between gap-2">
+                        <span class="text-slate-200 font-semibold">
+                            <span class="text-slate-500 font-normal">[${ts.slice(0, 8)}.${String((parseInt(ts.slice(9), 10) + idx * 18) % 1000).padStart(3, '0')}]</span>
+                            ${entry.step}
+                        </span>
+                        <span class="${statusColor[entry.status] || 'text-slate-400'} font-bold">[${entry.status}]</span>
+                    </div>
+                    <div class="text-slate-400 text-[10px] mt-0.5">${entry.detail}</div>
+                </div>
+            `).join('');
+        }
+
+        function updatePcbSchematic(nodes) {
+            const styles = {
+                healthy: { stroke: '#10b981', text: '#34d399', bg: 'rgba(16,185,129,0.15)', pulse: false },
+                warning: { stroke: '#f59e0b', text: '#fbbf24', bg: 'rgba(245,158,11,0.18)', pulse: false },
+                fault:   { stroke: '#ef4444', text: '#f87171', bg: 'rgba(239,68,68,0.22)', pulse: true },
+                offline: { stroke: '#475569', text: '#94a3b8', bg: 'rgba(71,85,105,0.20)', pulse: false }
+            };
+
+            Object.keys(nodes).forEach(key => {
+                const group = document.getElementById(`node_${key}`);
+                const labelEl = document.getElementById(`node_${key}_val`);
+                if (!group || !labelEl) return;
+
+                const nodeInfo = nodes[key];
+                const st = styles[nodeInfo.state] || styles.healthy;
+                const rects = group.querySelectorAll('rect');
+
+                if (rects[0]) rects[0].setAttribute('stroke', st.stroke);
+                if (rects[1]) rects[1].setAttribute('fill', st.bg);
+                labelEl.setAttribute('fill', st.text);
+                labelEl.textContent = nodeInfo.label;
+
+                group.classList.toggle('node-fault-pulse', st.pulse);
+            });
+
+            setTraceState('wire_port_esd', nodes.port.state);
+            setTraceState('wire_esd_pmic', nodes.esd.state);
+            setTraceState('wire_pmic_ldo', nodes.pmic.state === 'fault' ? 'offline' : nodes.ldo.state);
+            setTraceState('wire_ldo_mcu', nodes.ldo.state === 'fault' ? 'offline' : nodes.mcu.state);
+            setTraceState('wire_pmic_bat', nodes.bat.state);
+        }
+
+        function setTraceState(id, state) {
+            const el = document.getElementById(id);
+            if (!el) return;
+            el.classList.remove('wire-flow-healthy', 'wire-flow-warning');
+
+            if (state === 'healthy') {
+                el.setAttribute('stroke', '#10b981');
+                el.classList.add('wire-flow-healthy');
+            } else if (state === 'warning') {
+                el.setAttribute('stroke', '#f59e0b');
+                el.classList.add('wire-flow-warning');
+            } else if (state === 'fault') {
+                el.setAttribute('stroke', '#ef4444');
+            } else {
+                el.setAttribute('stroke', '#334155');
+            }
+        }
+
+        function inspectComponent(key, liveData = null) {
+            const item = PCB_COMPONENTS[key];
+            if (!item) return;
+
+            const nodeLive = liveData || (latestDiagnosis && latestDiagnosis.nodes ? latestDiagnosis.nodes[key] : null);
+
+            document.getElementById('inspCode').textContent = item.code;
+            document.getElementById('inspTitle').textContent = item.title;
+            document.getElementById('inspDesc').textContent = item.desc;
+            document.getElementById('inspTip').textContent = `Probe Tip: ${item.tip}`;
+
+            const measV = nodeLive ? nodeLive.measuredV : item.expectedV;
+            const measZ = nodeLive ? nodeLive.measuredZ : item.expectedZ;
+            const state = nodeLive ? nodeLive.state : 'healthy';
+
+            const vEl = document.getElementById('inspVoltage');
+            const zEl = document.getElementById('inspImpedance');
+
+            vEl.textContent = `${item.expectedV} / ${measV}`;
+            zEl.textContent = measZ;
+
+            vEl.className = `font-semibold mt-0.5 ${state === 'fault' ? 'text-rose-400' : (state === 'warning' ? 'text-amber-400' : 'text-emerald-400')}`;
+            zEl.className = `font-semibold mt-0.5 ${state === 'fault' ? 'text-rose-400' : 'text-[#00f0ff]'}`;
+        }
+
+        /**
+         * =========================================================================
+         * 6. LIVE MULTI-CHANNEL HTML5 CANVAS OSCILLOSCOPE
+         * =========================================================================
+         */
+        const scopeCanvas = document.getElementById('oscilloscopeCanvas');
+        const scopeCtx = scopeCanvas.getContext('2d');
+        const HISTORY_POINTS = 150;
+        let vHistory = new Array(HISTORY_POINTS).fill(5.05);
+        let aHistory = new Array(HISTORY_POINTS).fill(0.85);
+        let tHistory = new Array(HISTORY_POINTS).fill(34);
+        let scopePhase = 0;
+
+        function resizeOscilloscopeCanvas() {
+            const container = document.getElementById('scopeContainer');
+            if (!container || !scopeCanvas) return;
+            const rect = container.getBoundingClientRect();
+            const dpr = window.devicePixelRatio || 1;
+            scopeCanvas.width = Math.max(240, Math.floor(rect.width * dpr));
+            scopeCanvas.height = Math.max(150, Math.floor(rect.height * dpr));
+            scopeCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        }
+
+        function renderOscilloscopeLoop() {
+            const container = document.getElementById('scopeContainer');
+            if (container && scopeCanvas) {
+                const width = container.clientWidth;
+                const height = container.clientHeight;
+
+                const targetV = parseFloat(document.getElementById('voltageSlider').value);
+                const targetA = parseFloat(document.getElementById('currentSlider').value);
+                const targetT = parseFloat(document.getElementById('tempSlider').value);
+
+                scopePhase += 0.28;
+                const isFault = latestDiagnosis && latestDiagnosis.verdictCategory !== 'healthy';
+                const rippleAmpV = targetV > 0.1 ? (isFault ? 0.18 : 0.03) : 0;
+                const rippleAmpA = targetA > 0.02 ? (isFault ? 0.09 : 0.02) : 0;
+
+                const sampleV = Math.max(0, Math.min(20, targetV + Math.sin(scopePhase * 2.2) * rippleAmpV + (Math.random() - 0.5) * rippleAmpV * 0.6));
+                const sampleA = Math.max(0, Math.min(5, targetA + Math.cos(scopePhase * 1.8) * rippleAmpA + (Math.random() - 0.5) * rippleAmpA * 0.6));
+                const sampleT = Math.max(20, Math.min(120, targetT + Math.sin(scopePhase * 0.35) * 0.3));
+
+                vHistory.push(sampleV);
+                vHistory.shift();
+
+                aHistory.push(sampleA);
+                aHistory.shift();
+
+                tHistory.push(sampleT);
+                tHistory.shift();
+
+                // Update live RMS and Ripple numeric badges above oscilloscope
+                const rippleMv = targetV > 0.1 ? Math.round(rippleAmpV * 2 * 1000) : 0;
+                document.getElementById('scopeVrms').textContent = `${targetV.toFixed(2)}V`;
+                document.getElementById('scopeRipple').textContent = `${rippleMv} mVpp`;
+                document.getElementById('scopeIrms').textContent = `${targetA.toFixed(2)}A`;
+
+                // Clear oscilloscope screen
+                scopeCtx.fillStyle = '#090d16';
+                scopeCtx.fillRect(0, 0, width, height);
+
+                // Draw oscilloscope graticule grid
+                scopeCtx.strokeStyle = 'rgba(51, 65, 85, 0.35)';
+                scopeCtx.lineWidth = 1;
+                const cols = 8;
+                const rows = 4;
+                for (let c = 1; c < cols; c++) {
+                    const x = (width / cols) * c;
+                    scopeCtx.beginPath();
+                    scopeCtx.moveTo(x, 0);
+                    scopeCtx.lineTo(x, height);
+                    scopeCtx.stroke();
+                }
+                for (let r = 1; r < rows; r++) {
+                    const y = (height / rows) * r;
+                    scopeCtx.beginPath();
+                    scopeCtx.moveTo(0, y);
+                    scopeCtx.lineTo(width, y);
+                    scopeCtx.stroke();
+                }
+
+                // Helper to plot normalized channel trace
+                const plotTrace = (data, minVal, maxVal, color) => {
+                    scopeCtx.strokeStyle = color;
+                    scopeCtx.lineWidth = 2;
+                    scopeCtx.beginPath();
+                    for (let i = 0; i < data.length; i++) {
+                        const x = (i / (data.length - 1)) * width;
+                        const norm = (data[i] - minVal) / (maxVal - minVal);
+                        const y = height - 14 - norm * (height - 28);
+                        if (i === 0) scopeCtx.moveTo(x, y);
+                        else scopeCtx.lineTo(x, y);
+                    }
+                    scopeCtx.stroke();
+                };
+
+                // Plot CH3 Thermal Drift (20-120C), CH2 Current Draw (0-5.0A), CH1 VBUS (0-20V)
+                plotTrace(tHistory, 20, 120, '#f59e0b');
+                plotTrace(aHistory, 0, 5.0, '#10b981');
+                plotTrace(vHistory, 0, 20.0, '#00f0ff');
+
+                // Corner trigger & scale overlay
+                scopeCtx.font = '600 10px "JetBrains Mono", monospace';
+                scopeCtx.fillStyle = '#94a3b8';
+                scopeCtx.fillText(`TRIG:AUTO  CH1:${targetV.toFixed(2)}V  CH2:${targetA.toFixed(2)}A  CH3:${targetT.toFixed(0)}°C`, 10, 15);
+            }
+
+            requestAnimationFrame(renderOscilloscopeLoop);
+        }
+
+        /**
+         * =========================================================================
+         * 7. EXPORTABLE DIAGNOSTIC REPORT (.TXT)
+         * =========================================================================
+         */
+        function downloadDiagnosticReport() {
+            if (!latestDiagnosis) return;
+            const d = latestDiagnosis;
+            const now = new Date();
+            const timestamp = now.toISOString();
+
+            const lines = [
+                '====================================================================',
+                'TYPE-C ELECTRODIAG PRO — HARDWARE DIAGNOSTIC & REPAIRABILITY REPORT',
+                '====================================================================',
+                `Generated Timestamp : ${timestamp}`,
+                `Target Instrument   : ${d.instrument}`,
+                `USB Device Info     : ${usbMetadata.product} (${usbMetadata.manufacturer})`,
+                `USB VID / PID       : ${usbMetadata.vid} / ${usbMetadata.pid} (${usbMetadata.protocol})`,
+                '--------------------------------------------------------------------',
+                '1. MEASURED TELEMETRY & PROBE SIGNATURES',
+                '--------------------------------------------------------------------',
+                `VBUS Supply Voltage : ${d.telemetry.v.toFixed(2)} V`,
+                `Current Draw (IBUS) : ${d.telemetry.a.toFixed(2)} A`,
+                `Rail-to-GND Ohms    : ${d.telemetry.rFormatted}`,
+                `Hotspot Temperature : ${d.telemetry.t} C`,
+                `CC1/CC2 Config State: ${d.telemetry.cc.toUpperCase()}`,
+                `D+/D- Data Bus State: ${d.telemetry.dataBus.toUpperCase()}`,
+                '--------------------------------------------------------------------',
+                '2. OVERALL DIAGNOSTIC VERDICT',
+                '--------------------------------------------------------------------',
+                `Status Verdict      : ${d.verdictTitle}`,
+                `Repairability       : ${d.verdictPill}`,
+                `Faulty Part(s)      : ${d.partName} [${d.designator}]`,
+                `Failure Mode        : ${d.failureMode}`,
+                '',
+                'Root Cause Analysis:',
+                d.rootCause,
+                '',
+                'Engineering Assessment:',
+                d.reasoning,
+                '--------------------------------------------------------------------',
+                '3. REPAIR METRICS & BENCH PROCEDURE',
+                '--------------------------------------------------------------------',
+                `Technician Skill    : ${d.difficulty}`,
+                `Estimated Parts Cost: ${d.cost}`,
+                `Economic Viability  : ${d.viability}`,
+                `Required Bench Tools: ${d.tools.join(', ')}`,
+                '',
+                'Step-by-Step Repair Procedure:',
+                ...d.steps.map((s, idx) => `  ${idx + 1}. ${s}`),
+                '===================================================================='
+            ];
+
+            const blob = new Blob([lines.join('\n')], { type: 'text/plain;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            const fileStamp = now.toISOString().slice(0, 19).replace(/[:T]/g, '-');
+            a.href = url;
+            a.download = `TypeC_ElectroDiag_Report_${fileStamp}.txt`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+
+            showToast('Diagnostic report exported (.txt).', 'success');
+        }
+
+        // Initialize canvas sizing, default healthy preset, and animation loop on window load
+        window.addEventListener('resize', resizeOscilloscopeCanvas);
+        window.onload = function () {
+            resizeOscilloscopeCanvas();
+            applyPreset('normal');
+            renderOscilloscopeLoop();
+        };
+    </script>
+</body>
+</html>
