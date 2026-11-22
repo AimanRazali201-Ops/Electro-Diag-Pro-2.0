@@ -1,193 +1,189 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Type-C ElectroDiag Pro — Hardware Diagnostic Lab</title>
+    <title>Type-C ElectroDiag Pro — USB-C Electronic Instrument Diagnostics &amp; Repairability Analyzer</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter & JetBrains Mono -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        labBg: '#090d16',
+                        labCard: '#111827',
+                        labSub: '#0c1220',
+                        labCyan: '#00f0ff',
+                    },
+                    animation: {
+                        'scan-sweep': 'scanSweep 1.1s ease-in-out infinite',
+                    },
+                    keyframes: {
+                        scanSweep: {
+                            '0%': { transform: 'translateX(-100%)' },
+                            '100%': { transform: 'translateX(220%)' }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
     <style>
-        :root {
-            --bg: #090d16;
-            --card: #111827;
-            --sub: #0c1220;
-            --border: #1e293b;
-            --cyan: #00f0ff;
-            --emerald: #10b981;
-            --amber: #f59e0b;
-            --rose: #ef4444;
-            --text: #e2e8f0;
-            --muted: #94a3b8;
-        }
-        * { box-sizing: border-box; margin: 0; padding: 0; }
+        /* Dark-mode hardware engineering laboratory grid background */
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background-color: var(--bg);
+            background-color: #090d16;
             background-image:
-                radial-gradient(circle at 12% 10%, rgba(0, 240, 255, 0.08) 0%, transparent 42%),
-                linear-gradient(to right, rgba(30, 41, 59, 0.3) 1px, transparent 1px),
-                linear-gradient(to bottom, rgba(30, 41, 59, 0.3) 1px, transparent 1px);
-            background-size: 100% 100%, 32px 32px, 32px 32px;
-            color: var(--text);
-            min-height: 100vh;
-            line-height: 1.45;
+                radial-gradient(circle at 12% 8%, rgba(0, 240, 255, 0.08) 0%, transparent 42%),
+                radial-gradient(circle at 88% 92%, rgba(16, 185, 129, 0.06) 0%, transparent 42%),
+                linear-gradient(to right, rgba(30, 41, 59, 0.28) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(30, 41, 59, 0.28) 1px, transparent 1px);
+            background-size: 100% 100%, 100% 100%, 32px 32px, 32px 32px;
+            color: #e2e8f0;
+            overflow-x: hidden;
         }
-        .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
-        header {
-            position: sticky; top: 0; z-index: 20;
-            background: rgba(9, 13, 22, 0.92); backdrop-filter: blur(10px);
-            border-bottom: 1px solid var(--border);
-            padding: 14px 20px;
-        }
-        .header-inner {
-            max-width: 1380px; margin: 0 auto;
-            display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px;
-        }
-        .brand { display: flex; align-items: center; gap: 12px; }
-        .brand-icon {
-            width: 40px; height: 40px; border-radius: 10px;
-            background: rgba(0, 240, 255, 0.1); border: 1px solid rgba(0, 240, 255, 0.4);
-            display: flex; align-items: center; justify-content: center; color: var(--cyan);
-        }
-        .brand h1 { font-size: 1.1rem; font-weight: 800; color: #fff; }
-        .brand h1 span { color: var(--cyan); }
-        .badge {
-            font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 5px;
-            background: rgba(0, 240, 255, 0.12); color: var(--cyan); border: 1px solid rgba(0, 240, 255, 0.35);
-        }
-        .subtitle { font-size: 12px; color: var(--muted); margin-top: 2px; }
-        .btn-group { display: flex; flex-wrap: wrap; gap: 8px; }
-        button {
-            cursor: pointer; border-radius: 10px; padding: 8px 14px; font-size: 12px; font-weight: 600;
-            border: 1px solid var(--border); background: var(--card); color: var(--text);
-            display: inline-flex; align-items: center; gap: 7px; transition: 0.15s;
-        }
-        button:hover { background: #1e293b; }
-        .btn-midi { border-color: rgba(16, 185, 129, 0.45); background: rgba(16, 185, 129, 0.12); color: #6ee7b7; }
-        .btn-serial { border-color: rgba(0, 240, 255, 0.45); background: rgba(0, 240, 255, 0.12); color: var(--cyan); }
-        .dot { width: 8px; height: 8px; border-radius: 50%; background: #64748b; display: inline-block; }
-        .dot.active { background: var(--emerald); box-shadow: 0 0 8px var(--emerald); }
 
-        main {
-            max-width: 1380px; margin: 0 auto; padding: 20px;
-            display: grid; grid-template-columns: 380px 1fr; gap: 20px;
-        }
-        @media (max-width: 960px) { main { grid-template-columns: 1fr; } }
-
-        .col { display: flex; flex-direction: column; gap: 18px; }
-        .card {
-            background: rgba(17, 24, 39, 0.92); border: 1px solid var(--border);
-            border-radius: 16px; padding: 18px; box-shadow: 0 10px 25px rgba(0,0,0,0.35);
-        }
-        .card-title {
-            font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em;
-            color: var(--muted); font-weight: 700; margin-bottom: 12px;
-            display: flex; justify-content: space-between; align-items: center;
-        }
-        .info-box {
-            background: var(--bg); border: 1px solid var(--border); border-radius: 10px;
-            padding: 12px; font-size: 12px; color: var(--muted);
-        }
-        .preset-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-        .preset-btn {
-            flex-direction: column; align-items: flex-start; gap: 2px;
-            background: var(--sub); padding: 10px; border-radius: 10px; text-align: left;
-        }
-        .slider-row { margin-bottom: 14px; }
-        .slider-row:last-child { margin-bottom: 0; }
-        .slider-head { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 6px; }
-        .slider-val { color: var(--cyan); font-weight: 700; }
+        /* Custom precision probe sliders */
         input[type="range"] {
-            -webkit-appearance: none; appearance: none; width: 100%; height: 6px;
-            background: #1e293b; border-radius: 999px; outline: none; cursor: pointer;
+            -webkit-appearance: none;
+            appearance: none;
+            background: transparent;
+            cursor: pointer;
+        }
+        input[type="range"]::-webkit-slider-runnable-track {
+            height: 6px;
+            border-radius: 999px;
+            background: #1e293b;
         }
         input[type="range"]::-webkit-slider-thumb {
-            -webkit-appearance: none; appearance: none; width: 17px; height: 17px; border-radius: 50%;
-            background: var(--cyan); border: 2px solid var(--bg); box-shadow: 0 0 10px rgba(0,240,255,0.6);
+            -webkit-appearance: none;
+            appearance: none;
+            height: 18px;
+            width: 18px;
+            border-radius: 50%;
+            background: #00f0ff;
+            border: 2px solid #090d16;
+            margin-top: -6px;
+            box-shadow: 0 0 10px rgba(0, 240, 255, 0.65);
+            transition: transform 0.15s ease, background-color 0.15s ease;
+        }
+        input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.15);
+            background: #67f7ff;
         }
 
-        .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
-        @media (max-width: 640px) { .kpi-grid { grid-template-columns: 1fr 1fr; } }
-        .kpi { background: rgba(17, 24, 39, 0.92); border: 1px solid var(--border); border-radius: 14px; padding: 14px; }
-        .kpi-label { font-size: 10px; color: var(--muted); font-weight: 700; }
-        .kpi-num { font-size: 1.4rem; font-weight: 800; color: #fff; margin: 4px 0 2px; }
-        .kpi-sub { font-size: 11px; color: var(--emerald); }
-
-        .svg-wrap { background: var(--bg); border: 1px solid var(--border); border-radius: 12px; padding: 10px; overflow-x: auto; }
-        @keyframes dashFlow { to { stroke-dashoffset: -24; } }
-        .wire-flow { stroke-dasharray: 6 6; animation: dashFlow 0.75s linear infinite; }
-
-        .bottom-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
-        @media (max-width: 768px) { .bottom-grid { grid-template-columns: 1fr; } }
-        .diag-item { padding: 12px; border-radius: 10px; font-size: 12px; border: 1px solid; margin-bottom: 8px; }
-        .diag-ok { background: rgba(16, 185, 129, 0.1); border-color: rgba(16, 185, 129, 0.35); color: #a7f3d0; }
-        .diag-warn { background: rgba(245, 158, 11, 0.1); border-color: rgba(245, 158, 11, 0.35); color: #fde68a; }
-        .diag-crit { background: rgba(239, 68, 68, 0.12); border-color: rgba(239, 68, 68, 0.4); color: #fecaca; }
-
-        .console {
-            background: var(--bg); border: 1px solid var(--border); border-radius: 10px;
-            padding: 10px; height: 170px; overflow-y: auto; font-size: 11px;
-            display: flex; flex-direction: column; gap: 5px;
+        /* Animated SVG PCB trace current flow */
+        @keyframes dashFlow {
+            to { stroke-dashoffset: -24; }
         }
-        #toastContainer {
-            position: fixed; bottom: 16px; right: 16px; z-index: 50;
-            display: flex; flex-direction: column; gap: 8px; max-width: 340px;
+        .wire-flow-healthy {
+            stroke-dasharray: 6 6;
+            animation: dashFlow 0.75s linear infinite;
         }
-        .toast {
-            background: var(--card); border: 1px solid var(--cyan); color: #cffafe;
-            padding: 10px 14px; border-radius: 10px; font-size: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+        .wire-flow-warning {
+            stroke-dasharray: 4 8;
+            animation: dashFlow 1.4s linear infinite;
         }
+        @keyframes pulseCrimson {
+            0%, 100% { filter: drop-shadow(0 0 4px rgba(239, 68, 68, 0.55)); }
+            50% { filter: drop-shadow(0 0 15px rgba(239, 68, 68, 0.95)); }
+        }
+        .node-fault-pulse {
+            animation: pulseCrimson 1.15s ease-in-out infinite;
+        }
+
+        /* Custom scrollbar for terminal console */
+        .console-scroll::-webkit-scrollbar { width: 6px; }
+        .console-scroll::-webkit-scrollbar-track { background: #090d16; }
+        .console-scroll::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 999px; }
     </style>
 </head>
-<body>
-    <div id="toastContainer"></div>
+<body class="min-h-screen flex flex-col font-sans antialiased selection:bg-cyan-400/30 selection:text-cyan-100">
 
-    <header>
-        <div class="header-inner">
-            <div class="brand">
-                <div class="brand-icon">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <rect x="2" y="7" width="20" height="10" rx="5"></rect>
-                        <line x1="6" y1="12" x2="18" y2="12" stroke-linecap="round"></line>
+    <!-- Toast Notification Stack -->
+    <div id="toastContainer" class="fixed bottom-4 right-4 z-50 flex flex-col gap-2 max-w-sm w-full pointer-events-none px-4 sm:px-0"></div>
+
+    <!-- 1. TOP HEADER & HARDWARE ACTION CONTROLS -->
+    <header class="sticky top-0 z-30 bg-[#090d16]/90 backdrop-blur-md border-b border-slate-800/90">
+        <div class="max-w-[1440px] mx-auto px-4 sm:px-6 py-3.5 flex flex-wrap items-center justify-between gap-3">
+            
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-cyan-500/10 border border-[#00f0ff]/40 flex items-center justify-center shadow-[0_0_15px_rgba(0,240,255,0.18)] shrink-0">
+                    <svg class="w-6 h-6 text-[#00f0ff]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="2" y="7" width="20" height="10" rx="5" />
+                        <line x1="6" y1="12" x2="18" y2="12" stroke-linecap="round" />
+                        <circle cx="8" cy="12" r="0.8" fill="currentColor" />
+                        <circle cx="16" cy="12" r="0.8" fill="currentColor" />
                     </svg>
                 </div>
                 <div>
-                    <div style="display:flex;align-items:center;gap:8px;">
-                        <h1>Type-C <span>ElectroDiag</span> Pro</h1>
-                        <span class="badge mono">REV 3.2 STANDALONE</span>
+                    <div class="flex items-center gap-2">
+                        <h1 class="text-base sm:text-lg font-extrabold tracking-tight text-white">
+                            Type-C <span class="text-[#00f0ff]">ElectroDiag</span> Pro
+                        </h1>
+                        <span class="hidden sm:inline-flex items-center px-2 py-0.5 rounded text-[10px] font-mono font-semibold bg-cyan-950/90 text-[#00f0ff] border border-cyan-700/60">
+                            LAB BENCH v4.2
+                        </span>
                     </div>
-                    <div id="detectedDeviceBanner" class="subtitle">Plug Type-C cable to instrument &amp; click Detect Instrument</div>
+                    <p id="detectedDeviceBanner" class="text-xs text-slate-400">USB-C Electronic Instrument Diagnostics &amp; Repairability Analyzer</p>
                 </div>
             </div>
 
-            <div class="btn-group">
-                <button onclick="toggleAudio()"><span style="color:var(--cyan)">Audio</span></button>
-                <button class="btn-midi" onclick="initMidiDetection(true)">
-                    <span id="midiStatusDot" class="dot"></span>
-                    <span>Detect Instrument (MIDI)</span>
+            <!-- Action Buttons: Tone Toggle, Detect Instrument (MIDI), WebSerial, WebUSB, Sweep -->
+            <div class="flex flex-wrap items-center gap-2 w-full lg:w-auto justify-end">
+                <button id="soundToggleBtn" onclick="toggleAudio()" title="Toggle Lab Acoustic Feedback"
+                    class="p-2.5 rounded-xl bg-[#111827] hover:bg-slate-800 border border-slate-700/80 text-slate-300 transition flex items-center gap-1.5 text-xs font-medium cursor-pointer">
+                    <svg id="soundIconOn" class="w-4 h-4 text-[#00f0ff]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+                    </svg>
+                    <svg id="soundIconOff" class="w-4 h-4 text-slate-500 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" />
+                    </svg>
+                    <span class="hidden xl:inline">Tone</span>
                 </button>
-                <button class="btn-serial" onclick="connectSerialDevice()">
-                    <span id="serialStatusDot" class="dot"></span>
-                    <span>Sensor Bridge (Serial)</span>
+
+                <button onclick="initMidiDetection(true)"
+                    class="px-3.5 py-2.5 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/40 text-emerald-300 transition flex items-center gap-2 text-xs font-semibold cursor-pointer">
+                    <span id="midiStatusDot" class="w-2 h-2 rounded-full bg-slate-500"></span>
+                    <span>Detect Instrument</span>
+                </button>
+
+                <button onclick="connectSerialDevice()"
+                    class="px-3.5 py-2.5 rounded-xl bg-[#111827] hover:bg-slate-800 border border-slate-700/80 text-slate-200 transition flex items-center gap-2 text-xs font-semibold cursor-pointer">
+                    <span id="serialStatusDot" class="w-2 h-2 rounded-full bg-slate-500"></span>
+                    <span>WebSerial</span>
+                </button>
+
+                <button onclick="connectUsbDevice()"
+                    class="px-3.5 py-2.5 rounded-xl bg-[#111827] hover:bg-slate-800 border border-slate-700/80 text-slate-200 transition flex items-center gap-2 text-xs font-semibold cursor-pointer">
+                    <span id="usbStatusDot" class="w-2 h-2 rounded-full bg-slate-500"></span>
+                    <span>WebUSB</span>
+                </button>
+
+                <button onclick="runAutoSweep()"
+                    class="px-3.5 py-2.5 rounded-xl bg-cyan-500/15 hover:bg-cyan-500/25 border border-[#00f0ff]/40 text-[#00f0ff] transition flex items-center gap-1.5 text-xs font-semibold cursor-pointer">
+                    <span>Full Sweep</span>
                 </button>
             </div>
         </div>
     </header>
 
-    <main>
-        <div class="col">
-            <div class="card">
-                <div class="card-title mono">
-                    <span>Connected USB-C Instrument</span>
-                    <span id="usbLinkBadge" class="badge">OFFLINE</span>
-                </div>
-                <div id="instrumentInfoBox" class="info-box mono">
-                    Waiting for USB-C instrument... Connect a data-capable Type-C cable, turn ON your instrument, and click <b>Detect Instrument (MIDI)</b>.
-                </div>
-            </div>
+    <!-- 2. MAIN DIAGNOSTIC WORKBENCH -->
+    <main class="flex-1 max-w-[1440px] w-full mx-auto px-4 sm:px-6 py-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
 
-            <div class="card">
-                <div class="card-title mono">
-                    <span>Quick Fault Presets</span>
-                    <a href="javascript:void(0)" onclick="runAutoSweep()" style="color:var(--cyan);text-decoration:none;">Auto-Scan</a>
-                </div>
-                <div class="preset-grid">
-                    <button class="preset-btn" onclick="applyPreset('pd20v')">
+        <!-- Left Column: Instrument Link, Fault Presets & Probe Sliders -->
+        <section class="lg:col-span-4 flex flex-col gap-5">
+
+            <!-- Connected USB-C Instrument Card -->
