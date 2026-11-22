@@ -1,155 +1,193 @@
 <!DOCTYPE html>
-<html lang="en" class="dark">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Type-C ElectroDiag Pro — Electronic Instrument Hardware Diagnostic Lab</title>
-    <script src="https://tailwindcss.com"></script>
-    <link rel="preconnect" href="https://googleapis.com">
-    <link rel="preconnect" href="https://gstatic.com" crossorigin>
-    <link href="https://googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
-
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                        mono: ['JetBrains Mono', 'monospace'],
-                    },
-                    colors: {
-                        labBg: '#090d16',
-                        labCard: '#111827',
-                        labSub: '#0c1220',
-                        labCyan: '#00f0ff',
-                    }
-                }
-            }
-        }
-    </script>
-
+    <title>Type-C ElectroDiag Pro — Hardware Diagnostic Lab</title>
     <style>
+        :root {
+            --bg: #090d16;
+            --card: #111827;
+            --sub: #0c1220;
+            --border: #1e293b;
+            --cyan: #00f0ff;
+            --emerald: #10b981;
+            --amber: #f59e0b;
+            --rose: #ef4444;
+            --text: #e2e8f0;
+            --muted: #94a3b8;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
-            background-color: #090d16;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg);
             background-image:
-                radial-gradient(circle at 12% 10%, rgba(0, 240, 255, 0.07) 0%, transparent 42%),
-                radial-gradient(circle at 88% 90%, rgba(16, 185, 129, 0.05) 0%, transparent 42%),
-                linear-gradient(to right, rgba(30, 41, 59, 0.28) 1px, transparent 1px),
-                linear-gradient(to bottom, rgba(30, 41, 59, 0.28) 1px, transparent 1px);
-            background-size: 100% 100%, 100% 100%, 32px 32px, 32px 32px;
-            color: #e2e8f0;
-            overflow-x: hidden;
+                radial-gradient(circle at 12% 10%, rgba(0, 240, 255, 0.08) 0%, transparent 42%),
+                linear-gradient(to right, rgba(30, 41, 59, 0.3) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(30, 41, 59, 0.3) 1px, transparent 1px);
+            background-size: 100% 100%, 32px 32px, 32px 32px;
+            color: var(--text);
+            min-height: 100vh;
+            line-height: 1.45;
         }
-        input[type="range"] { -webkit-appearance: none; appearance: none; background: transparent; cursor: pointer; }
-        input[type="range"]::-webkit-slider-runnable-track { height: 6px; border-radius: 999px; background: #1e293b; }
+        .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
+        header {
+            position: sticky; top: 0; z-index: 20;
+            background: rgba(9, 13, 22, 0.92); backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border);
+            padding: 14px 20px;
+        }
+        .header-inner {
+            max-width: 1380px; margin: 0 auto;
+            display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px;
+        }
+        .brand { display: flex; align-items: center; gap: 12px; }
+        .brand-icon {
+            width: 40px; height: 40px; border-radius: 10px;
+            background: rgba(0, 240, 255, 0.1); border: 1px solid rgba(0, 240, 255, 0.4);
+            display: flex; align-items: center; justify-content: center; color: var(--cyan);
+        }
+        .brand h1 { font-size: 1.1rem; font-weight: 800; color: #fff; }
+        .brand h1 span { color: var(--cyan); }
+        .badge {
+            font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 5px;
+            background: rgba(0, 240, 255, 0.12); color: var(--cyan); border: 1px solid rgba(0, 240, 255, 0.35);
+        }
+        .subtitle { font-size: 12px; color: var(--muted); margin-top: 2px; }
+        .btn-group { display: flex; flex-wrap: wrap; gap: 8px; }
+        button {
+            cursor: pointer; border-radius: 10px; padding: 8px 14px; font-size: 12px; font-weight: 600;
+            border: 1px solid var(--border); background: var(--card); color: var(--text);
+            display: inline-flex; align-items: center; gap: 7px; transition: 0.15s;
+        }
+        button:hover { background: #1e293b; }
+        .btn-midi { border-color: rgba(16, 185, 129, 0.45); background: rgba(16, 185, 129, 0.12); color: #6ee7b7; }
+        .btn-serial { border-color: rgba(0, 240, 255, 0.45); background: rgba(0, 240, 255, 0.12); color: var(--cyan); }
+        .dot { width: 8px; height: 8px; border-radius: 50%; background: #64748b; display: inline-block; }
+        .dot.active { background: var(--emerald); box-shadow: 0 0 8px var(--emerald); }
+
+        main {
+            max-width: 1380px; margin: 0 auto; padding: 20px;
+            display: grid; grid-template-columns: 380px 1fr; gap: 20px;
+        }
+        @media (max-width: 960px) { main { grid-template-columns: 1fr; } }
+
+        .col { display: flex; flex-direction: column; gap: 18px; }
+        .card {
+            background: rgba(17, 24, 39, 0.92); border: 1px solid var(--border);
+            border-radius: 16px; padding: 18px; box-shadow: 0 10px 25px rgba(0,0,0,0.35);
+        }
+        .card-title {
+            font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em;
+            color: var(--muted); font-weight: 700; margin-bottom: 12px;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .info-box {
+            background: var(--bg); border: 1px solid var(--border); border-radius: 10px;
+            padding: 12px; font-size: 12px; color: var(--muted);
+        }
+        .preset-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        .preset-btn {
+            flex-direction: column; align-items: flex-start; gap: 2px;
+            background: var(--sub); padding: 10px; border-radius: 10px; text-align: left;
+        }
+        .slider-row { margin-bottom: 14px; }
+        .slider-row:last-child { margin-bottom: 0; }
+        .slider-head { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 6px; }
+        .slider-val { color: var(--cyan); font-weight: 700; }
+        input[type="range"] {
+            -webkit-appearance: none; appearance: none; width: 100%; height: 6px;
+            background: #1e293b; border-radius: 999px; outline: none; cursor: pointer;
+        }
         input[type="range"]::-webkit-slider-thumb {
-            -webkit-appearance: none; appearance: none; height: 18px; width: 18px; border-radius: 50%;
-            background: #00f0ff; border: 2px solid #090d16; margin-top: -6px;
-            box-shadow: 0 0 10px rgba(0, 240, 255, 0.65);
+            -webkit-appearance: none; appearance: none; width: 17px; height: 17px; border-radius: 50%;
+            background: var(--cyan); border: 2px solid var(--bg); box-shadow: 0 0 10px rgba(0,240,255,0.6);
         }
+
+        .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+        @media (max-width: 640px) { .kpi-grid { grid-template-columns: 1fr 1fr; } }
+        .kpi { background: rgba(17, 24, 39, 0.92); border: 1px solid var(--border); border-radius: 14px; padding: 14px; }
+        .kpi-label { font-size: 10px; color: var(--muted); font-weight: 700; }
+        .kpi-num { font-size: 1.4rem; font-weight: 800; color: #fff; margin: 4px 0 2px; }
+        .kpi-sub { font-size: 11px; color: var(--emerald); }
+
+        .svg-wrap { background: var(--bg); border: 1px solid var(--border); border-radius: 12px; padding: 10px; overflow-x: auto; }
         @keyframes dashFlow { to { stroke-dashoffset: -24; } }
-        .wire-flow-healthy { stroke-dasharray: 6 6; animation: dashFlow 0.75s linear infinite; }
-        @keyframes pulseCrimson {
-            0%, 100% { filter: drop-shadow(0 0 4px rgba(239, 68, 68, 0.55)); }
-            50% { filter: drop-shadow(0 0 14px rgba(239, 68, 68, 0.95)); }
+        .wire-flow { stroke-dasharray: 6 6; animation: dashFlow 0.75s linear infinite; }
+
+        .bottom-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+        @media (max-width: 768px) { .bottom-grid { grid-template-columns: 1fr; } }
+        .diag-item { padding: 12px; border-radius: 10px; font-size: 12px; border: 1px solid; margin-bottom: 8px; }
+        .diag-ok { background: rgba(16, 185, 129, 0.1); border-color: rgba(16, 185, 129, 0.35); color: #a7f3d0; }
+        .diag-warn { background: rgba(245, 158, 11, 0.1); border-color: rgba(245, 158, 11, 0.35); color: #fde68a; }
+        .diag-crit { background: rgba(239, 68, 68, 0.12); border-color: rgba(239, 68, 68, 0.4); color: #fecaca; }
+
+        .console {
+            background: var(--bg); border: 1px solid var(--border); border-radius: 10px;
+            padding: 10px; height: 170px; overflow-y: auto; font-size: 11px;
+            display: flex; flex-direction: column; gap: 5px;
         }
-        .node-fault-pulse { animation: pulseCrimson 1.2s ease-in-out infinite; }
-        .console-scroll::-webkit-scrollbar { width: 6px; }
-        .console-scroll::-webkit-scrollbar-track { background: #090d16; }
-        .console-scroll::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 999px; }
+        #toastContainer {
+            position: fixed; bottom: 16px; right: 16px; z-index: 50;
+            display: flex; flex-direction: column; gap: 8px; max-width: 340px;
+        }
+        .toast {
+            background: var(--card); border: 1px solid var(--cyan); color: #cffafe;
+            padding: 10px 14px; border-radius: 10px; font-size: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+        }
     </style>
 </head>
-<body class="min-h-screen flex flex-col font-sans antialiased selection:bg-cyan-400/30 selection:text-cyan-100">
+<body>
+    <div id="toastContainer"></div>
 
-    <div id="toastContainer" class="fixed bottom-4 right-4 z-50 flex flex-col gap-2 max-w-sm w-full pointer-events-none px-4 sm:px-0"></div>
-
-    <!-- Header -->
-    <header class="sticky top-0 z-30 bg-[#090d16]/90 backdrop-blur-md border-b border-slate-800/90">
-        <div class="max-w-[1440px] mx-auto px-4 sm:px-6 py-3.5 flex flex-wrap items-center justify-between gap-3">
-            <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-xl bg-cyan-500/10 border border-[#00f0ff]/40 flex items-center justify-center shrink-0">
-                    <svg class="w-6 h-6 text-[#00f0ff]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <rect x="2" y="7" width="20" height="10" rx="5" />
-                        <line x1="6" y1="12" x2="18" y2="12" stroke-linecap="round" />
-                        <circle cx="8" cy="12" r="0.8" fill="currentColor" />
-                        <circle cx="16" cy="12" r="0.8" fill="currentColor" />
+    <header>
+        <div class="header-inner">
+            <div class="brand">
+                <div class="brand-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="2" y="7" width="20" height="10" rx="5"></rect>
+                        <line x1="6" y1="12" x2="18" y2="12" stroke-linecap="round"></line>
                     </svg>
                 </div>
                 <div>
-                    <div class="flex items-center gap-2">
-                        <h1 class="text-base sm:text-lg font-extrabold tracking-tight text-white">
-                            Type-C <span class="text-[#00f0ff]">ElectroDiag</span> Pro
-                        </h1>
-                        <span class="hidden sm:inline-flex items-center px-2 py-0.5 rounded text-[10px] font-mono font-semibold bg-cyan-950/90 text-[#00f0ff] border border-cyan-700/60">
-                            REV 3.1 AUTO-DETECT
-                        </span>
+                    <div style="display:flex;align-items:center;gap:8px;">
+                        <h1>Type-C <span>ElectroDiag</span> Pro</h1>
+                        <span class="badge mono">REV 3.2 STANDALONE</span>
                     </div>
-                    <p id="detectedDeviceBanner" class="text-xs text-slate-400">Waiting for Type-C Instrument (WebMIDI) or Sensor Bridge (WebSerial)...</p>
+                    <div id="detectedDeviceBanner" class="subtitle">Plug Type-C cable to instrument &amp; click Detect Instrument</div>
                 </div>
             </div>
 
-            <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto justify-end">
-                <button id="soundToggleBtn" onclick="toggleAudio()" class="p-2.5 rounded-xl bg-[#111827] hover:bg-slate-800 border border-slate-700/80 text-slate-300 transition flex items-center gap-1.5 text-xs font-medium cursor-pointer">
-                    <span class="text-[#00f0ff]">Audio</span>
+            <div class="btn-group">
+                <button onclick="toggleAudio()"><span style="color:var(--cyan)">Audio</span></button>
+                <button class="btn-midi" onclick="initMidiDetection(true)">
+                    <span id="midiStatusDot" class="dot"></span>
+                    <span>Detect Instrument (MIDI)</span>
                 </button>
-
-                <button onclick="initMidiDetection(true)" class="px-3.5 py-2.5 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/40 text-emerald-300 transition flex items-center gap-2 text-xs font-semibold cursor-pointer">
-                    <span id="midiStatusDot" class="w-2 h-2 rounded-full bg-slate-500"></span>
-                    <span id="midiBtnLabel">Detect Instrument (MIDI)</span>
-                </button>
-
-                <button onclick="connectSerialDevice()" class="px-3.5 py-2.5 rounded-xl bg-cyan-500/15 hover:bg-cyan-500/25 border border-[#00f0ff]/40 text-[#00f0ff] transition flex items-center gap-2 text-xs font-semibold cursor-pointer">
-                    <span id="serialStatusDot" class="w-2 h-2 rounded-full bg-slate-500"></span>
+                <button class="btn-serial" onclick="connectSerialDevice()">
+                    <span id="serialStatusDot" class="dot"></span>
                     <span>Sensor Bridge (Serial)</span>
                 </button>
             </div>
         </div>
     </header>
 
-    <!-- Main Grid -->
-    <main class="flex-1 max-w-[1440px] w-full mx-auto px-4 sm:px-6 py-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
-
-        <!-- Left Column -->
-        <section class="lg:col-span-4 flex flex-col gap-5">
-            <!-- Detected USB Instrument Card -->
-            <div class="bg-[#111827]/90 border border-slate-800 rounded-2xl p-5 shadow-xl">
-                <div class="flex items-center justify-between mb-2">
-                    <h2 class="text-xs font-mono uppercase tracking-wider text-slate-400 font-semibold">Connected USB-C Instrument</h2>
-                    <span id="usbLinkBadge" class="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-800 text-slate-400">OFFLINE</span>
+    <main>
+        <div class="col">
+            <div class="card">
+                <div class="card-title mono">
+                    <span>Connected USB-C Instrument</span>
+                    <span id="usbLinkBadge" class="badge">OFFLINE</span>
                 </div>
-                <div id="instrumentInfoBox" class="p-3 rounded-xl bg-[#090d16] border border-slate-800 font-mono text-xs text-slate-400">
-                    Plug a Type-C cable from your laptop into your instrument, then press any key or click <span class="text-emerald-400">Detect Instrument</span>.
+                <div id="instrumentInfoBox" class="info-box mono">
+                    Waiting for USB-C instrument... Connect a data-capable Type-C cable, turn ON your instrument, and click <b>Detect Instrument (MIDI)</b>.
                 </div>
             </div>
 
-            <!-- Presets -->
-            <div class="bg-[#111827]/90 border border-slate-800 rounded-2xl p-5 shadow-xl">
-                <div class="flex items-center justify-between mb-3">
-                    <h2 class="text-xs font-mono uppercase tracking-wider text-slate-400 font-semibold">Manual Fault Simulation</h2>
-                    <button onclick="runAutoSweep()" class="text-xs font-mono text-[#00f0ff] hover:underline cursor-pointer">Auto-Scan</button>
+            <div class="card">
+                <div class="card-title mono">
+                    <span>Quick Fault Presets</span>
+                    <a href="javascript:void(0)" onclick="runAutoSweep()" style="color:var(--cyan);text-decoration:none;">Auto-Scan</a>
                 </div>
-                <div class="grid grid-cols-2 gap-2">
-                    <button onclick="applyPreset('pd20v')" class="px-3 py-2 rounded-xl bg-[#0c1220] hover:bg-slate-800 border border-slate-700/70 text-left cursor-pointer">
-                        <div class="text-xs font-semibold text-emerald-400">USB-C Instrument OK</div>
-                        <div class="text-[11px] font-mono text-slate-400">5.0V / Data Active</div>
-                    </button>
-                    <button onclick="applyPreset('vbusShort')" class="px-3 py-2 rounded-xl bg-[#0c1220] hover:bg-slate-800 border border-slate-700/70 text-left cursor-pointer">
-                        <div class="text-xs font-semibold text-rose-400">VBUS Short-to-GND</div>
-                        <div class="text-[11px] font-mono text-slate-400">0.4V / Overcurrent</div>
-                    </button>
-                    <button onclick="applyPreset('ccOpen')" class="px-3 py-2 rounded-xl bg-[#0c1220] hover:bg-slate-800 border border-slate-700/70 text-left cursor-pointer">
-                        <div class="text-xs font-semibold text-amber-400">CC1 Line Open</div>
-                        <div class="text-[11px] font-mono text-slate-400">0.0V / No Handshake</div>
-                    </button>
-                    <button onclick="applyPreset('dataShort')" class="px-3 py-2 rounded-xl bg-[#0c1220] hover:bg-slate-800 border border-slate-700/70 text-left cursor-pointer">
-                        <div class="text-xs font-semibold text-rose-400">D+ / D- ESD Short</div>
-                        <div class="text-[11px] font-mono text-slate-400">Diode Drop 0.08V</div>
-                    </button>
-                </div>
-            </div>
-
-            <!-- Sliders -->
-            <div class="bg-[#111827]/90 border border-slate-800 rounded-2xl p-5 shadow-xl flex flex-col gap-4">
-                <h2 class="text-xs font-mono uppercase tracking-wider text-slate-400 font-semibold">Probe Values (Live or Manual)</h2>
-                <div>
+                <div class="preset-grid">
+                    <button class="preset-btn" onclick="applyPreset('pd20v')">
