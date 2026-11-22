@@ -3,22 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Type-C ElectroDiag Pro — LAB BENCH v4.3</title>
+    <title>Type-C ElectroDiag Pro — LAB BENCH v5.0</title>
     <script src="https://tailwindcss.com"></script>
-    <link rel="preconnect" href="https://googleapis.com">
-    <link rel="preconnect" href="https://gstatic.com" crossorigin>
-    <link href="https://googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    fontFamily: { sans: ['Inter', 'sans-serif'], mono: ['JetBrains Mono', 'monospace'] },
-                    colors: { labBg: '#090d16', labCard: '#111827', labSub: '#0c1220', labCyan: '#00f0ff' }
-                }
-            }
-        }
-    </script>
     <style>
         body {
             background-color: #090d16;
@@ -28,7 +14,9 @@
                 linear-gradient(to bottom, rgba(30, 41, 59, 0.28) 1px, transparent 1px);
             background-size: 100% 100%, 32px 32px, 32px 32px;
             color: #e2e8f0;
+            font-family: system-ui, -apple-system, sans-serif;
         }
+        .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
         input[type="range"] { -webkit-appearance: none; appearance: none; background: transparent; cursor: pointer; }
         input[type="range"]::-webkit-slider-runnable-track { height: 6px; border-radius: 999px; background: #1e293b; }
         input[type="range"]::-webkit-slider-thumb {
@@ -36,107 +24,131 @@
             background: #00f0ff; border: 2px solid #090d16; margin-top: -6px;
             box-shadow: 0 0 10px rgba(0, 240, 255, 0.65);
         }
-        @keyframes dashFlow { to { stroke-dashoffset: -24; } }
-        .wire-flow-healthy { stroke-dasharray: 6 6; animation: dashFlow 0.75s linear infinite; }
-        .console-scroll::-webkit-scrollbar { width: 6px; }
-        .console-scroll::-webkit-scrollbar-track { background: #090d16; }
-        .console-scroll::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 999px; }
     </style>
 </head>
-<body class="min-h-screen flex flex-col font-sans antialiased">
+<body class="min-h-screen flex flex-col">
 
-    <div id="toastContainer" class="fixed bottom-4 right-4 z-50 flex flex-col gap-2 max-w-sm w-full pointer-events-none px-4 sm:px-0"></div>
+    <div id="toastContainer" class="fixed bottom-4 right-4 z-50 flex flex-col gap-2 max-w-sm w-full pointer-events-none px-4"></div>
 
-    <header class="sticky top-0 z-30 bg-[#090d16]/90 backdrop-blur-md border-b border-slate-800/90">
-        <div class="max-w-[1440px] mx-auto px-4 sm:px-6 py-3.5 flex flex-wrap items-center justify-between gap-3">
+    <!-- Header -->
+    <header class="sticky top-0 z-30 bg-[#090d16]/95 border-b border-slate-800 px-4 py-3.5">
+        <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3">
             <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-xl bg-cyan-500/10 border border-[#00f0ff]/40 flex items-center justify-center shrink-0">
-                    <svg class="w-6 h-6 text-[#00f0ff]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <rect x="2" y="7" width="20" height="10" rx="5" />
-                        <line x1="6" y1="12" x2="18" y2="12" stroke-linecap="round" />
-                    </svg>
+                <div class="w-10 h-10 rounded-xl bg-cyan-500/10 border border-[#00f0ff]/40 flex items-center justify-center text-[#00f0ff] font-bold mono">
+                    USB-C
                 </div>
                 <div>
                     <div class="flex items-center gap-2">
-                        <h1 class="text-base sm:text-lg font-extrabold tracking-tight text-white">Type-C <span class="text-[#00f0ff]">ElectroDiag</span> Pro</h1>
-                        <span class="px-2 py-0.5 rounded text-[10px] font-mono font-semibold bg-cyan-950/90 text-[#00f0ff] border border-cyan-700/60">LAB BENCH v4.3</span>
+                        <h1 class="text-lg font-extrabold text-white">Type-C <span class="text-[#00f0ff]">ElectroDiag</span> Pro</h1>
+                        <span class="px-2 py-0.5 rounded text-[10px] mono font-bold bg-cyan-950 text-[#00f0ff] border border-cyan-700">v5.0 WORKING</span>
                     </div>
-                    <p id="detectedDeviceBanner" class="text-xs text-slate-400">Multi-Protocol Type-C Instrument &amp; Hardware Analyzer</p>
+                    <p id="detectedDeviceBanner" class="text-xs text-slate-400">Ready — Plug Type-C cable to instrument &amp; click Detect</p>
                 </div>
             </div>
 
-            <div class="flex flex-wrap items-center gap-2 justify-end">
-                <button onclick="toggleAudio()" class="p-2.5 rounded-xl bg-[#111827] hover:bg-slate-800 border border-slate-700/80 text-xs font-medium text-[#00f0ff] cursor-pointer">Tone</button>
-
-                <button onclick="detectAllChannels()"
-                    class="px-3.5 py-2.5 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/40 text-emerald-300 transition flex items-center gap-2 text-xs font-semibold cursor-pointer">
-                    <span id="midiStatusDot" class="w-2 h-2 rounded-full bg-slate-500"></span>
-                    <span>Detect Instrument (MIDI / Audio)</span>
+            <div class="flex flex-wrap items-center gap-2">
+                <button id="btnDetect" type="button"
+                    class="px-4 py-2.5 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-400/50 text-emerald-300 text-xs font-bold cursor-pointer flex items-center gap-2">
+                    <span id="midiStatusDot" class="w-2.5 h-2.5 rounded-full bg-slate-500"></span>
+                    <span>Detect Instrument</span>
                 </button>
 
-                <button onclick="connectSerialDevice()"
-                    class="px-3.5 py-2.5 rounded-xl bg-[#111827] hover:bg-slate-800 border border-slate-700/80 text-slate-200 transition flex items-center gap-2 text-xs font-semibold cursor-pointer">
-                    <span id="serialStatusDot" class="w-2 h-2 rounded-full bg-slate-500"></span>
-                    <span>WebSerial</span>
+                <button id="btnSerial" type="button"
+                    class="px-3.5 py-2.5 rounded-xl bg-[#111827] hover:bg-slate-800 border border-slate-700 text-slate-200 text-xs font-semibold cursor-pointer">
+                    WebSerial
                 </button>
 
-                <button onclick="connectUsbDevice()"
-                    class="px-3.5 py-2.5 rounded-xl bg-[#111827] hover:bg-slate-800 border border-slate-700/80 text-slate-200 transition flex items-center gap-2 text-xs font-semibold cursor-pointer">
-                    <span id="usbStatusDot" class="w-2 h-2 rounded-full bg-slate-500"></span>
-                    <span>WebUSB</span>
+                <button id="btnUsb" type="button"
+                    class="px-3.5 py-2.5 rounded-xl bg-[#111827] hover:bg-slate-800 border border-slate-700 text-slate-200 text-xs font-semibold cursor-pointer">
+                    WebUSB
                 </button>
             </div>
         </div>
     </header>
 
-    <main class="flex-1 max-w-[1440px] w-full mx-auto px-4 sm:px-6 py-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
+    <!-- Main Grid -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 py-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+        <!-- Left Controls -->
         <section class="lg:col-span-4 flex flex-col gap-5">
-            <!-- Instrument Detection Card -->
-            <div class="bg-[#111827]/90 border border-slate-800 rounded-2xl p-5 shadow-xl">
-                <div class="flex items-center justify-between mb-2.5">
-                    <h2 class="text-xs font-mono uppercase tracking-wider text-slate-400 font-semibold">USB-C Instrument Link</h2>
-                    <span id="usbLinkBadge" class="px-2 py-0.5 rounded text-[10px] font-mono font-semibold bg-slate-800 text-slate-400">STANDBY</span>
+            <div class="bg-[#111827] border border-slate-800 rounded-2xl p-5">
+                <div class="flex items-center justify-between mb-2">
+                    <h2 class="text-xs mono uppercase text-slate-400 font-bold">USB-C Instrument Status</h2>
+                    <span id="usbLinkBadge" class="px-2 py-0.5 rounded text-[10px] mono font-bold bg-slate-800 text-slate-400">WAITING</span>
                 </div>
-                <div id="instrumentInfoBox" class="p-3.5 rounded-xl bg-[#090d16] border border-slate-800/90 font-mono text-xs text-slate-400 leading-relaxed">
-                    Click <span class="text-emerald-400 font-semibold">Detect Instrument (MIDI / Audio)</span> after plugging in your Type-C cable.
+                <div id="instrumentInfoBox" class="p-3.5 rounded-xl bg-[#090d16] border border-slate-800 mono text-xs text-slate-300">
+                    Click the green <b class="text-emerald-400">Detect Instrument</b> button at the top right to scan your USB-C port.
                 </div>
             </div>
 
-            <!-- Presets -->
-            <div class="bg-[#111827]/90 border border-slate-800 rounded-2xl p-5 shadow-xl">
-                <div class="flex items-center justify-between mb-3">
-                    <h2 class="text-xs font-mono uppercase tracking-wider text-slate-400 font-semibold">Bench Fault Scenarios</h2>
-                    <button onclick="applyPreset('pd20v')" class="text-xs font-mono text-[#00f0ff] hover:underline cursor-pointer">Reset</button>
-                </div>
+            <div class="bg-[#111827] border border-slate-800 rounded-2xl p-5">
+                <h2 class="text-xs mono uppercase text-slate-400 font-bold mb-3">Quick Test Scenarios</h2>
                 <div class="grid grid-cols-2 gap-2">
-                    <button onclick="applyPreset('pd20v')" class="px-3 py-2.5 rounded-xl bg-[#0c1220] hover:bg-slate-800 border border-slate-700/70 text-left cursor-pointer">
-                        <div class="text-xs font-semibold text-emerald-400">Healthy 20V PD</div>
-                        <div class="text-[11px] font-mono text-slate-400">20.0V / 3.00A</div>
+                    <button type="button" onclick="applyPreset('ok')" class="p-2.5 rounded-xl bg-[#0c1220] hover:bg-slate-800 border border-slate-700 text-left cursor-pointer">
+                        <div class="text-xs font-bold text-emerald-400">Healthy 20V PD</div>
+                        <div class="text-[11px] mono text-slate-400">20.0V / 3.00A</div>
                     </button>
-                    <button onclick="applyPreset('vbusShort')" class="px-3 py-2.5 rounded-xl bg-[#0c1220] hover:bg-slate-800 border border-slate-700/70 text-left cursor-pointer">
-                        <div class="text-xs font-semibold text-rose-400">VBUS Short-to-GND</div>
-                        <div class="text-[11px] font-mono text-slate-400">0.4V / 4.85A</div>
+                    <button type="button" onclick="applyPreset('short')" class="p-2.5 rounded-xl bg-[#0c1220] hover:bg-slate-800 border border-slate-700 text-left cursor-pointer">
+                        <div class="text-xs font-bold text-rose-400">VBUS Short</div>
+                        <div class="text-[11px] mono text-slate-400">0.4V / 4.85A</div>
                     </button>
-                    <button onclick="applyPreset('ccOpen')" class="px-3 py-2.5 rounded-xl bg-[#0c1220] hover:bg-slate-800 border border-slate-700/70 text-left cursor-pointer">
-                        <div class="text-xs font-semibold text-amber-400">CC1 Line Open</div>
-                        <div class="text-[11px] font-mono text-slate-400">0.0V / No PD</div>
+                    <button type="button" onclick="applyPreset('cc')" class="p-2.5 rounded-xl bg-[#0c1220] hover:bg-slate-800 border border-slate-700 text-left cursor-pointer">
+                        <div class="text-xs font-bold text-amber-400">CC1 Open</div>
+                        <div class="text-[11px] mono text-slate-400">0.0V / No PD</div>
                     </button>
-                    <button onclick="applyPreset('dataShort')" class="px-3 py-2.5 rounded-xl bg-[#0c1220] hover:bg-slate-800 border border-slate-700/70 text-left cursor-pointer">
-                        <div class="text-xs font-semibold text-rose-400">D+ / D- ESD Leak</div>
-                        <div class="text-[11px] font-mono text-slate-400">Diode 0.08V</div>
+                    <button type="button" onclick="applyPreset('data')" class="p-2.5 rounded-xl bg-[#0c1220] hover:bg-slate-800 border border-slate-700 text-left cursor-pointer">
+                        <div class="text-xs font-bold text-rose-400">D+/D- Short</div>
+                        <div class="text-[11px] mono text-slate-400">Diode 0.08V</div>
                     </button>
                 </div>
             </div>
 
-            <!-- Sliders -->
-            <div class="bg-[#111827]/90 border border-slate-800 rounded-2xl p-5 shadow-xl flex flex-col gap-4">
-                <h2 class="text-xs font-mono uppercase tracking-wider text-slate-400 font-semibold">Precision Probe Telemetry</h2>
+            <div class="bg-[#111827] border border-slate-800 rounded-2xl p-5 flex flex-col gap-4">
+                <h2 class="text-xs mono uppercase text-slate-400 font-bold">Manual Probe Sliders</h2>
                 <div>
-                    <div class="flex justify-between text-xs mb-1"><span class="text-slate-300">VBUS Rail Voltage</span><span id="valVbus" class="font-mono font-bold text-[#00f0ff]">20.0 V</span></div>
-                    <input id="sliderVbus" type="range" min="0" max="28" step="0.1" value="20.0" oninput="updateDiagnostics()" class="w-full">
+                    <div class="flex justify-between text-xs mb-1"><span>VBUS Voltage</span><span id="valVbus" class="mono font-bold text-[#00f0ff]">5.0 V</span></div>
+                    <input id="sliderVbus" type="range" min="0" max="28" step="0.1" value="5.0" oninput="updateDiagnostics()" class="w-full">
                 </div>
                 <div>
-                    <div class="flex justify-between text-xs mb-1"><span class="text-slate-300">VBUS Current Draw</span><span id="valCurrent" class="font-mono font-bold text-[#00f0ff]">3.00 A</span></div>
-                    <input id="sliderCurrent" type="range" min="0" max="5" step="0.05" value="3.00" oninput="updateDiagnostics()" class="w-full">
+                    <div class="flex justify-between text-xs mb-1"><span>Current Draw</span><span id="valCurrent" class="mono font-bold text-[#00f0ff]">0.35 A</span></div>
+                    <input id="sliderCurrent" type="range" min="0" max="5" step="0.05" value="0.35" oninput="updateDiagnostics()" class="w-full">
                 </div>
                 <div>
+                    <div class="flex justify-between text-xs mb-1"><span>CC1 Pin</span><span id="valCc1" class="mono font-bold text-[#00f0ff]">1.65 V</span></div>
+                    <input id="sliderCc1" type="range" min="0" max="3.3" step="0.05" value="1.65" oninput="updateDiagnostics()" class="w-full">
+                </div>
+                <div>
+                    <div class="flex justify-between text-xs mb-1"><span>D+/D- Diode Drop</span><span id="valDataDiode" class="mono font-bold text-[#00f0ff]">0.62 V</span></div>
+                    <input id="sliderDataDiode" type="range" min="0" max="1.5" step="0.01" value="0.62" oninput="updateDiagnostics()" class="w-full">
+                </div>
+            </div>
+        </section>
+
+        <!-- Right Dashboard -->
+        <section class="lg:col-span-8 flex flex-col gap-5">
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <div class="bg-[#111827] border border-slate-800 rounded-2xl p-4">
+                    <div class="text-[11px] mono text-slate-400">POWER</div>
+                    <div id="kpiPower" class="text-2xl mono font-bold text-white mt-1">1.8 W</div>
+                </div>
+                <div class="bg-[#111827] border border-slate-800 rounded-2xl p-4">
+                    <div class="text-[11px] mono text-slate-400">USB DATA LINK</div>
+                    <div id="kpiDataBus" class="text-2xl mono font-bold text-white mt-1">IDLE</div>
+                </div>
+                <div class="bg-[#111827] border border-slate-800 rounded-2xl p-4">
+                    <div class="text-[11px] mono text-slate-400">REPAIR SCORE</div>
+                    <div id="kpiRepairScore" class="text-2xl mono font-bold text-[#00f0ff] mt-1">100 / 100</div>
+                </div>
+                <div class="bg-[#111827] border border-slate-800 rounded-2xl p-4">
+                    <div class="text-[11px] mono text-slate-400">VERDICT</div>
+                    <div id="kpiStatus" class="text-2xl mono font-bold text-emerald-400 mt-1">PASS</div>
+                </div>
+            </div>
+
+            <div class="bg-[#111827] border border-slate-800 rounded-2xl p-5">
+                <h3 class="text-xs mono uppercase text-slate-400 font-bold mb-3">Fault Diagnosis &amp; Action Plan</h3>
+                <div id="diagnosisList" class="text-xs"></div>
+            </div>
+
+            <div class="bg-[#111827] border border-slate-800 rounded-2xl p-5">
+                <div class="flex items-center justify-between mb-3">
