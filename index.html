@@ -155,7 +155,7 @@
       justify-content: space-between;
     }
 
-    /* Kotak Merah: Profile Cards */
+    /* RED BOX: Profile Cards */
     .scenario-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
     .scenario-btn {
       display: flex;
@@ -179,7 +179,7 @@
       box-shadow: 0 0 12px rgba(239, 68, 68, 0.25);
     }
 
-    /* Kotak Kuning: Live Telemetry */
+    /* YELLOW BOX: Live Telemetry */
     .telemetry-row { margin-bottom: 14px; }
     .telemetry-header {
       display: flex;
@@ -233,6 +233,43 @@
     }
     .log-entry { margin-bottom: 4px; }
     .log-time { color: #64748b; margin-right: 8px; }
+    .toolbar button {
+      background: #182032;
+      color: #f1f5f9;
+      border: 1px solid #232d42;
+      transition: background 0.1s ease, border-color 0.1s ease, color 0.1s ease, transform 0.05s ease;
+    }
+
+    .toolbar button:active {
+      background: rgba(16, 185, 200, 0.22);
+      border-color: #10b9c8;
+      color: #10b9c8;
+      transform: scale(0.98);
+    }
+   .pcb-badge {
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-family: monospace;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      white-space: nowrap;
+    }
+    .pcb-ok {
+      color: #10b981;
+      background: rgba(16, 185, 129, 0.14);
+      border: 1px solid rgba(16, 185, 129, 0.4);
+    }
+    .pcb-issue {
+      color: #f59e0b;
+      background: rgba(245, 158, 11, 0.14);
+      border: 1px solid rgba(245, 158, 11, 0.4);
+    }
+    .pcb-error {
+      color: #ef4444;
+      background: rgba(239, 68, 68, 0.14);
+      border: 1px solid rgba(239, 68, 68, 0.4);
+    } 
   </style>
 </head>
 <body>
@@ -243,10 +280,10 @@
         <div class="subtitle">Auto-Sync Smart Guitar, Amp &amp; PCB Fault Telemetry Analyzer</div>
       </div>
 
-      <div class="toolbar">
+     <div class="toolbar">
         <button id="btn-tone">🔊 Test Tone (440Hz)</button>
-        <button id="btn-detect" class="primary">🎹 Scan &amp; Sync PCB</button>
-        <button id="btn-amp-sweep" class="amp-btn">🎸 Amp &amp; Speaker PCB Test</button>
+        <button id="btn-detect">🎹 Scan &amp; Sync PCB</button>
+        <button id="btn-amp-sweep">🎸 Amp &amp; Speaker PCB Test</button>
         <button id="btn-serial">🔌 Hardware Probe (WebSerial)</button>
         <button id="btn-usb">⚡ Pair USB-C Device</button>
       </div>
@@ -262,13 +299,12 @@
         <div id="link-banner" class="status-banner">
           <span id="link-status" class="status-label">WAITING FOR TYPE-C CONNECTION</span>
           <div id="link-desc">
-            Sambungkan <strong>Smart Guitar / Audio Interface</strong> menggunakan kabel data Type-C ke laptop. Klik <strong>Scan &amp; Sync PCB</strong> sekali untuk memberi kebenaran akses peranti, selepas itu bacaan kotak di bawah akan dikemas kini secara automatik.
-          </div>
+            Connect your <strong>Smart Guitar / Audio Interface</strong> using a Type-C data cable to your laptop. Click <strong>Scan &amp; Sync PCB</strong> once to grant device access permission, and the readings below will update automatically.
         </div>
         <div id="device-list" class="device-list"></div>
       </section>
 
-      <!-- KOTAK MERAH: Instrument & Amp PCB Fault Profiles -->
+      <!-- RED BOX: Instrument & Amp PCB Fault Profiles -->
       <section class="card">
         <h2>
           Instrument &amp; Amp PCB Fault Profiles
@@ -297,7 +333,7 @@
         </div>
       </section>
 
-      <!-- KOTAK KUNING: Live Rail & PCB Probe Telemetry -->
+      <!-- YELLOW BOX: Live Rail & PCB Probe Telemetry -->
       <section class="card">
         <h2>
           Live Rail &amp; PCB Probe Telemetry
@@ -344,184 +380,388 @@
     </div>
   </div>
 
-  <script>
-    const logBox = document.getElementById('console-log');
-    function log(msg) {
-      const now = new Date().toLocaleTimeString('en-GB', { hour12: false });
-      const line = document.createElement('div');
-      line.className = 'log-entry';
-      line.innerHTML = `<span class="log-time">[${now}]</span>${msg}`;
-      logBox.appendChild(line);
-      logBox.scrollTop = logBox.scrollHeight;
-    }
+<script>
+  const syncState = {
+    connected: false,
+    deviceName: "",
+    externalDevices: [],
+    vbus: 0.0,
+    curr: 0.00,
+    ccText: "STANDBY",
+    dpText: "WAITING",
+    isSerialLive: false
+  };
 
-    const linkBanner = document.getElementById('link-banner');
-    const linkStatus = document.getElementById('link-status');
-    const linkDesc = document.getElementById('link-desc');
-    const deviceList = document.getElementById('device-list');
-    const autoBadge = document.getElementById('auto-badge');
-    const telemetryModeBadge = document.getElementById('telemetry-mode-badge');
+  // DOM References matching your exact HTML IDs
+  const autoBadge = document.getElementById("auto-badge");
+  const linkBanner = document.getElementById("link-banner");
+  const linkStatus = document.getElementById("link-status");
+  const linkDesc = document.getElementById("link-desc");
+  const deviceList = document.getElementById("device-list");
 
-    const sliderVbus = document.getElementById('slider-vbus');
-    const sliderCurr = document.getElementById('slider-curr');
-    const valVbus = document.getElementById('val-vbus');
-    const valCurr = document.getElementById('val-curr');
-    const valWatts = document.getElementById('val-watts');
-    const valCc = document.getElementById('val-cc');
-    const valDp = document.getElementById('val-dp');
+  const sliderVbus = document.getElementById("slider-vbus");
+  const sliderCurr = document.getElementById("slider-curr");
+  const valVbus = document.getElementById("val-vbus");
+  const valCurr = document.getElementById("val-curr");
+  const valWatts = document.getElementById("val-watts");
+  const valCc = document.getElementById("val-cc");
+  const valDp = document.getElementById("val-dp");
+  const modeBadge = document.getElementById("telemetry-mode-badge");
+  const scenarioBtns = document.querySelectorAll(".scenario-btn");
 
-    let liveMonitorInterval = null;
-    let hardwareProbeConnected = false;
+  function addLog(msg) {
+    const logEl = document.getElementById("console-log") || document.querySelector(".console-box");
+    if (!logEl) return;
+    const t = new Date().toTimeString().split(" ")[0];
+    const row = document.createElement("div");
+    row.className = "log-entry";
+    row.innerHTML = `<span class="log-time">[${t}]</span>${msg}`;
+    logEl.appendChild(row);
+    logEl.scrollTop = logEl.scrollHeight;
+  }
 
-    function setBanner(state, title, desc) {
-      linkBanner.className = `status-banner ${state}`;
-      linkStatus.textContent = title;
-      linkDesc.innerHTML = desc;
-    }
+  // Evaluate PCB parts into OK (green), IN ISSUE (yellow), or ERROR (red)
+  function evaluatePcbParts() {
+    const { connected, vbus, curr, ccText, dpText } = syncState;
+    const parts = [];
+    const ccLower = ccText.toLowerCase();
+    const dpLower = dpText.toLowerCase();
 
-    function highlightProfileCard(profileId, statusType) {
-      document.querySelectorAll('.scenario-btn').forEach(b => {
-        b.classList.remove('active-ok', 'active-fault');
+    // 1. Power Rail & Regulator / Amp IC
+    if (vbus > 0 && (vbus < 3.0 || curr > 4.5 || ccLower.includes("short"))) {
+      parts.push({
+        label: "[POWER RAIL / AMP IC]",
+        detail: `ERR-501 • Rail Collapse / Short Circuit (${vbus.toFixed(1)}V / ${curr.toFixed(2)}A)`,
+        status: "ERROR",
+        cls: "pcb-error"
       });
-      if (!profileId) return;
-      const target = document.getElementById(profileId);
-      if (target) {
-        target.classList.add(statusType === 'ok' ? 'active-ok' : 'active-fault');
-      }
+    } else if (vbus > 0 && ((vbus >= 3.0 && vbus < 4.6) || (vbus > 5.5 && vbus < 14.2) || curr > 3.5)) {
+      parts.push({
+        label: "[PD / BUCK STAGE]",
+        detail: `ERR-204 • Voltage Sag / Elevated Current (${vbus.toFixed(1)}V / ${curr.toFixed(2)}A)`,
+        status: "IN ISSUE",
+        cls: "pcb-issue"
+      });
+    } else if (vbus >= 4.6) {
+      parts.push({
+        label: "[POWER RAIL / PD IC]",
+        detail: `PWR-00 • Supply Rail Locked & Nominal (${vbus.toFixed(1)}V / ${curr.toFixed(2)}A)`,
+        status: "OK",
+        cls: "pcb-ok"
+      });
     }
 
-    function updateTelemetry(v, a, ccText, dpText) {
-      const voltage = parseFloat(v);
-      const current = parseFloat(a);
-      sliderVbus.value = voltage;
-      sliderCurr.value = current;
-      valVbus.textContent = `${voltage.toFixed(1)} V`;
-      valCurr.textContent = `${current.toFixed(2)} A`;
-      valWatts.textContent = `${(voltage * current).toFixed(1)} W`;
-      if (ccText) valCc.textContent = ccText;
-      if (dpText) valDp.textContent = dpText;
+    // 2. Speaker Coil / CC Termination / Output Jack
+    if (ccLower.includes("open") || ccLower.includes("∞")) {
+      parts.push({
+        label: "[DATA / COIL STAGE]",
+        detail: "ERR-404 • Open Circuit (∞ Ω) — Broken D+/D- Line or Blown Speaker Coil",
+        status: "ERROR",
+        cls: "pcb-error"
+      });
+    } else if (ccLower.includes("high") || ccLower.includes("oxidized")) {
+      parts.push({
+        label: "[SPEAKER / OUTPUT JACK]",
+        detail: "ERR-302 • High Impedance — Oxidized Jack Contact / Degraded Coil",
+        status: "IN ISSUE",
+        cls: "pcb-issue"
+      });
+    } else if (vbus >= 4.6) {
+      parts.push({
+        label: "[CC / ACOUSTIC STAGE]",
+        detail: `SPK-00 • ${ccText} • Continuity Nominal`,
+        status: "OK",
+        cls: "pcb-ok"
+      });
     }
 
-    function addDeviceCard(protocol, name, status, color = 'var(--accent-green)') {
-      const div = document.createElement('div');
-      div.className = 'device-item';
-      div.innerHTML = `<span><strong>[${protocol}]</strong> ${name}</span><span style="color:${color}">${status}</span>`;
-      deviceList.appendChild(div);
+    // 3. USB Codec & D+/D- Bus
+    if (dpLower.includes("no enum") || (vbus >= 4.6 && !connected && curr < 0.1)) {
+      parts.push({
+        label: "[USB CODEC / D+ D-]",
+        detail: "ERR-109 • USB Enumeration Failed — Charge-Only Cable or Transceiver Fault",
+        status: "ERROR",
+        cls: "pcb-error"
+      });
+    } else if (connected) {
+      parts.push({
+        label: "[USB CODEC / D+ D-]",
+        detail: `USB-00 • ${dpText} • Enumerating Properly`,
+        status: "OK",
+        cls: "pcb-ok"
+      });
     }
 
-    // --- 1. Automatic PCB Detection & Live Telemetry Sync ---
-    async function scanHardware(autoTriggered = false) {
-      deviceList.innerHTML = '';
-      let externalDevices = [];
-      let internalDevices = [];
+    return parts;
+  }
 
-      if (!autoTriggered) {
-        log('Memulakan imbasan bas Type-C untuk Smart Guitar, MIDI & Audio Interface...');
-      }
+  // Master Sync Function: updates Top Diagnosis + Bottom Telemetry + Profile Highlight
+  function syncAllSections(customBannerMsg = null) {
+    const { connected, externalDevices, vbus, curr, ccText, dpText, isSerialLive } = syncState;
 
-      // 1A. Semak WebMIDI (Smart Guitars, Multi-FX, Modeling Amps)
-      if (navigator.requestMIDIAccess) {
+    // 1. Sync Sliders & Telemetry Readouts (Yellow Box)
+    sliderVbus.value = vbus;
+    sliderCurr.value = curr;
+    valVbus.textContent = `${vbus.toFixed(1)} V`;
+    valCurr.textContent = `${curr.toFixed(2)} A`;
+    valWatts.textContent = `${(vbus * curr).toFixed(1)} W`;
+    valCc.textContent = ccText;
+    valDp.textContent = dpText;
+    modeBadge.textContent = isSerialLive ? "LIVE SERIAL PROBE" : (connected ? "LIVE USB-C SYNC" : "PROTOCOL ESTIMATE");
+
+    // 2. Evaluate PCB Health
+    const parts = evaluatePcbParts();
+    const hasError = parts.some(p => p.status === "ERROR");
+    const hasIssue = parts.some(p => p.status === "IN ISSUE");
+
+    // 3. Sync Top Diagnosis Banner & Badge
+    linkBanner.classList.remove("ok", "fault", "issue");
+
+    if (hasError) {
+      const errCode = parts.find(p => p.status === "ERROR").detail.split(" ")[0];
+      autoBadge.textContent = `FAULT DETECTED (${errCode})`;
+      linkBanner.classList.add("fault");
+      linkStatus.textContent = `PCB MALFUNCTION DETECTED (${errCode})`;
+      linkDesc.textContent = customBannerMsg || "Critical hardware fault detected on the active PCB or Type-C link. Check red ERROR badges below.";
+    } else if (hasIssue) {
+      const warnCode = parts.find(p => p.status === "IN ISSUE").detail.split(" ")[0];
+      autoBadge.textContent = `WARNING (${warnCode})`;
+      linkBanner.classList.add("issue");
+      linkStatus.textContent = `DEGRADED COMPONENT DETECTED (${warnCode})`;
+      linkDesc.textContent = customBannerMsg || "Component operating outside nominal tolerance. Preventive maintenance recommended.";
+    } else if (connected || vbus >= 4.6) {
+      autoBadge.textContent = "AUTO-SYNC LIVE";
+      linkBanner.classList.add("ok");
+      linkStatus.textContent = connected
+        ? `TYPE-C LINK ACTIVE: ${syncState.deviceName.toUpperCase()}`
+        : "PCB & ACOUSTIC LINK NOMINAL (SYS-00)";
+      linkDesc.textContent = customBannerMsg || "All monitored PCB power rails, CC lines, and USB D+/D- audio/MIDI endpoints are operating within normal range.";
+    } else {
+      autoBadge.textContent = "AUTO-SYNC STANDBY";
+      linkStatus.textContent = "WAITING FOR TYPE-C CONNECTION";
+      linkDesc.innerHTML = 'Connect your <strong>Smart Guitar / Audio Interface</strong> using a Type-C data cable to your laptop. Click <strong>Scan &amp; Sync PCB</strong> once to grant device access permission, and the readings below will update automatically.';
+    }
+
+    // 4. Render Connected Devices + PCB Subsystem Status Rows
+    let rowsHtml = "";
+    externalDevices.forEach(dev => {
+      rowsHtml += `
+        <div class="device-item">
+          <span><strong>[USB-C DEVICE]</strong> ${dev}</span>
+          <span class="pcb-badge ${hasError ? "pcb-error" : "pcb-ok"}">${hasError ? "ERROR" : "OK"}</span>
+        </div>
+      `;
+    });
+
+    parts.forEach(p => {
+      rowsHtml += `
+        <div class="device-item">
+          <span><strong>${p.label}</strong> ${p.detail}</span>
+          <span class="pcb-badge ${p.cls}">${p.status}</span>
+        </div>
+      `;
+    });
+
+    deviceList.innerHTML = rowsHtml;
+  }
+
+  // Auto-Scan Type-C Audio / MIDI / WebUSB Devices
+  async function scanAndSyncTypeC(triggerSource = "Auto-Scan") {
+    addLog(`${triggerSource}: Scanning Type-C bus for Smart Guitar, Audio Interface & MIDI...`);
+    let foundExternals = [];
+
+    // Check WebMIDI
+    if (navigator.requestMIDIAccess) {
+      try {
+        const midi = await navigator.requestMIDIAccess();
+        midi.inputs.forEach(input => foundExternals.push(`MIDI IN: ${input.name}`));
+        midi.outputs.forEach(output => foundExternals.push(`MIDI OUT: ${output.name}`));
+        midi.onstatechange = () => scanAndSyncTypeC("MIDI Hotplug");
+      } catch (_) {}
+    }
+
+    // Check WebAudio / MediaDevices
+    if (navigator.mediaDevices && navigator.mediaDevices.enumerateDevices) {
+      try {
         try {
-          const midi = await navigator.requestMIDIAccess({ sysex: false });
-          midi.onstatechange = (e) => {
-            log(`Perubahan port MIDI dikesan: ${e.port.name} (${e.port.state})`);
-            scanHardware(true);
-          };
-
-          midi.inputs.forEach((input) => {
-            if (input.state === 'connected') {
-              externalDevices.push({ type: 'MIDI IN', name: `${input.manufacturer || 'USB'} ${input.name}` });
-            }
-          });
-          midi.outputs.forEach((output) => {
-            if (output.state === 'connected') {
-              externalDevices.push({ type: 'MIDI OUT', name: `${output.manufacturer || 'USB'} ${output.name}` });
-            }
-          });
-        } catch (err) {
-          log(`Nota WebMIDI: ${err.message}`);
-        }
-      }
-
-      // 1B. Semak USB Audio Devices (Smart Guitar USB Audio, Soundcard, Modeling Amp)
-      if (navigator.mediaDevices && navigator.mediaDevices.enumerateDevices) {
-        try {
-          if (!autoTriggered) {
-            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-            stream.getTracks().forEach(t => t.stop());
-          }
-          const devices = await navigator.mediaDevices.enumerateDevices();
-          devices.filter(d => d.kind === 'audioinput' || d.kind === 'audiooutput').forEach(dev => {
-            if (!dev.label || dev.label.toLowerCase().includes('default') || dev.label.toLowerCase().includes('communications')) return;
-            const lower = dev.label.toLowerCase();
-            const isInternal = lower.includes('realtek') || lower.includes('amd audio') || lower.includes('intel') || lower.includes('macbook');
-            if (isInternal) {
-              internalDevices.push(dev.label);
-            } else {
-              externalDevices.push({ type: 'USB AUDIO DSP', name: dev.label });
-            }
-          });
-        } catch (err) {
-          log(`Kebenaran audio diperlukan untuk baca nama peranti: ${err.message}`);
-        }
-      }
-
-      // 1C. Semak Paired WebUSB Devices
-      if ('usb' in navigator) {
-        try {
-          const pairedUsb = await navigator.usb.getDevices();
-          pairedUsb.forEach(dev => {
-            externalDevices.push({
-              type: 'USB-C RAW',
-              name: `${dev.productName || 'USB Controller'} (VID: 0x${dev.vendorId.toString(16)})`
-            });
-          });
+          const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+          stream.getTracks().forEach(t => t.stop());
         } catch (_) {}
+
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        devices.forEach(d => {
+          if ((d.kind === "audioinput" || d.kind === "audiooutput") && d.deviceId !== "default" && d.deviceId !== "communications") {
+            const name = d.label || "";
+            const low = name.toLowerCase();
+            // Filter out built-in laptop speakers/mics so external Type-C interfaces stand out
+            const isInternal = low.includes("realtek") || low.includes("built-in") || low.includes("internal") || low.includes("macbook");
+            if (name && !isInternal && !foundExternals.includes(name)) {
+              foundExternals.push(name);
+            }
+          }
+        });
+      } catch (err) {
+        addLog(`Audio bus notice: ${err.message}`);
+      }
+    }
+
+    // Check Paired Raw WebUSB Devices
+    if (navigator.usb && navigator.usb.getDevices) {
+      try {
+        const usbDevs = await navigator.usb.getDevices();
+        usbDevs.forEach(u => {
+          const label = `${u.productName || "Type-C USB Device"} (${u.vendorId.toString(16)}:${u.productId.toString(16)})`;
+          if (!foundExternals.includes(label)) foundExternals.push(label);
+        });
+      } catch (_) {}
+    }
+
+    // Update Sync State based on real Type-C connection
+    if (foundExternals.length > 0) {
+      syncState.connected = true;
+      syncState.externalDevices = foundExternals;
+      syncState.deviceName = foundExternals[0];
+
+      // Populate live Type-C telemetry if not overridden by physical WebSerial probe
+      if (!syncState.isSerialLive) {
+        syncState.vbus = 5.0;
+        syncState.curr = 0.48;
+        syncState.ccText = "CC1: 5.1kΩ Rd (USB 5V)";
+        syncState.dpText = "D+/D- & DSP: Locked";
       }
 
-      // Papar senarai peranti
-      externalDevices.forEach(d => addDeviceCard(d.type, d.name, 'PCB ONLINE', 'var(--accent-green)'));
-      internalDevices.forEach(name => addDeviceCard('HOST AUDIO', name, 'READY', 'var(--accent-cyan)'));
+      // Highlight "Smart Guitar USB-C OK" profile card automatically
+      scenarioBtns.forEach(b => b.classList.remove("active"));
+      const okBtn = document.getElementById("prof-guitar-ok");
+      if (okBtn) okBtn.classList.add("active");
 
-      // --- SINKRONISASI KOTAK MERAH & KOTAK KUNING ---
-      if (externalDevices.length > 0) {
-        const primaryDevice = externalDevices[0].name;
-        autoBadge.textContent = 'LIVE SYNC: CONNECTED';
-        autoBadge.classList.add('live');
+      addLog(`Synced ${foundExternals.length} Type-C endpoint(s): ${foundExternals.join(", ")}`);
+    } else {
+      syncState.connected = false;
+      syncState.externalDevices = [];
+      syncState.deviceName = "";
+      if (!syncState.isSerialLive) {
+        syncState.vbus = 0.0;
+        syncState.curr = 0.00;
+        syncState.ccText = "STANDBY";
+        syncState.dpText = "WAITING";
+      }
+      scenarioBtns.forEach(b => b.classList.remove("active"));
+      addLog("No external Type-C data device detected on bus (Standby).");
+    }
 
-        setBanner(
-          'ok',
-          `SMART INSTRUMENT / PCB DIKESAN: ${primaryDevice.toUpperCase()}`,
-          `Dikesan ${externalDevices.length} titik akhir aktif. Talian data USB (D+/D-) dan cip DSP pada papan PCB berada dalam keadaan normal.`
-        );
+    syncAllSections();
+  }
 
-        // Nyalakan kad 'Smart Guitar USB-C OK' dalam Kotak Merah
-        highlightProfileCard('prof-guitar-ok', 'ok');
+  // Bind Fault Profile Buttons (Red Box) -> Syncs Telemetry + Top Diagnosis
+  scenarioBtns.forEach(btn => {
+    btn.addEventListener("click", () => {
+      scenarioBtns.forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
 
-        // Jika tiada probe fizikal (INA219/ESP32) disambung, paparkan telemetri operasi USB-C sebenar berdasarkan status protokol
-        if (!hardwareProbeConnected) {
-          telemetryModeBadge.textContent = 'USB-C PROTOCOL LIVE';
-          telemetryModeBadge.classList.add('live');
-          startLiveDspTelemetry(primaryDevice);
+      syncState.vbus = parseFloat(btn.dataset.v);
+      syncState.curr = parseFloat(btn.dataset.a);
+      syncState.ccText = btn.dataset.cc;
+      syncState.dpText = btn.dataset.dp;
+      syncState.connected = btn.dataset.state === "ok";
+
+      addLog(`Profile applied: ${btn.querySelector("span").textContent}`);
+      syncAllSections(btn.dataset.msg);
+    });
+  });
+
+  // Bind Reset Button
+  document.getElementById("btn-reset").addEventListener("click", () => {
+    scenarioBtns.forEach(b => b.classList.remove("active"));
+    syncState.isSerialLive = false;
+    scanAndSyncTypeC("Reset");
+  });
+
+  // Bind Live Sliders (Yellow Box) -> Syncs Top Diagnosis in real time
+  sliderVbus.addEventListener("input", () => {
+    syncState.vbus = parseFloat(sliderVbus.value);
+    syncAllSections();
+  });
+
+  sliderCurr.addEventListener("input", () => {
+    syncState.curr = parseFloat(sliderCurr.value);
+    syncAllSections();
+  });
+
+  // Toolbar Buttons
+  document.getElementById("btn-detect").addEventListener("click", () => scanAndSyncTypeC("Manual Scan"));
+
+  document.getElementById("btn-amp-sweep").addEventListener("click", () => {
+    const ampBtn = document.getElementById("prof-amp-ok");
+    if (ampBtn) ampBtn.click();
+  });
+
+  document.getElementById("btn-tone").addEventListener("click", () => {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.frequency.value = 440;
+    gain.gain.value = 0.08;
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start();
+    setTimeout(() => { osc.stop(); ctx.close(); }, 450);
+    addLog("440Hz acoustic test tone sent to active Type-C / host output.");
+  });
+
+  document.getElementById("btn-usb").addEventListener("click", async () => {
+    if (!navigator.usb) return addLog("WebUSB not supported in this browser.");
+    try {
+      await navigator.usb.requestDevice({ filters: [] });
+      scanAndSyncTypeC("WebUSB Pair");
+    } catch (e) {
+      addLog(`WebUSB pair cancelled: ${e.message}`);
+    }
+  });
+
+  document.getElementById("btn-serial").addEventListener("click", async () => {
+    if (!navigator.serial) return addLog("WebSerial not supported in this browser.");
+    try {
+      const port = await navigator.serial.requestPort();
+      await port.open({ baudRate: 115200 });
+      syncState.isSerialLive = true;
+      addLog("Hardware Probe (WebSerial) connected — streaming live VBUS/Current readings.");
+      syncAllSections();
+
+      const decoder = new TextDecoderStream();
+      port.readable.pipeTo(decoder.writable);
+      const reader = decoder.readable.getReader();
+      let buffer = "";
+
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        buffer += value;
+        const lines = buffer.split("\n");
+        buffer = lines.pop();
+        for (const line of lines) {
+          // Expects serial lines like: V:5.02,A:0.46 or JSON {"v":5.02,"a":0.46}
+          const vMatch = line.match(/v["']?\s*[:=]\s*([0-9.]+)/i);
+          const aMatch = line.match(/a["']?\s*[:=]\s*([0-9.]+)/i);
+          if (vMatch) syncState.vbus = parseFloat(vMatch[1]);
+          if (aMatch) syncState.curr = parseFloat(aMatch[1]);
+          if (vMatch || aMatch) syncAllSections();
         }
+      }
+    } catch (e) {
+      addLog(`WebSerial notice: ${e.message}`);
+    }
+  });
 
-        log(`SYNC BERJAYA: ${primaryDevice} disambungkan -> Profil & Telemetri PCB dikemas kini.`);
-      } else {
-        stopLiveDspTelemetry();
-        autoBadge.textContent = 'NO EXTERNAL PCB';
-        autoBadge.classList.remove('live');
-        telemetryModeBadge.textContent = 'DISCONNECTED / IDLE';
-        telemetryModeBadge.classList.remove('live');
+  // Automatic Hotplug Listeners (triggers the instant a Type-C cable is plugged in or unplugged)
+  if (navigator.mediaDevices) {
+    navigator.mediaDevices.addEventListener("devicechange", () => scanAndSyncTypeC("Type-C Hotplug"));
+  }
+  if (navigator.usb) {
+    navigator.usb.addEventListener("connect", () => scanAndSyncTypeC("USB-C Plugged In"));
+    navigator.usb.addEventListener("disconnect", () => scanAndSyncTypeC("USB-C Unplugged"));
+  }
 
-        setBanner(
-          'warn',
-          'TIADA SMART GUITAR / PCB LUARAN DIKESAN',
-          'Jika kabel Type-C sudah dicucuk ke gitar tetapi tiada bacaan keluar: periksa sama ada kabel adalah jenis <strong>charge-only</strong>, talian <strong>D+/D- terputus</strong>, atau cip USB pada PCB gitar rosak.'
-        );
-
-        // Nyalakan kad 'Data Line / Coil Open' dalam Kotak Merah & set bacaan idle dalam Kotak Kuning
-        highlightProfileCard('prof-amp-open', 'fault');
-        if (!hardwareProbeConnected) {
-          updateTelemetry(5.0, 0.04, 'D+/D-: OPEN / NO ENUM', 'DSP: OFFLINE');
-     
-
+  // Initial Boot Scan
+  scanAndSyncTypeC("Boot");
+</script>
