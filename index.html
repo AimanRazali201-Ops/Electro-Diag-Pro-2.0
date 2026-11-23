@@ -580,7 +580,7 @@
       } catch (_) {}
     }
 
-    // Check WebAudio / MediaDevices
+  // Check WebAudio / MediaDevices (Strictly exclude built-in laptop mics/speakers)
     if (navigator.mediaDevices && navigator.mediaDevices.enumerateDevices) {
       try {
         try {
@@ -593,9 +593,35 @@
           if ((d.kind === "audioinput" || d.kind === "audiooutput") && d.deviceId !== "default" && d.deviceId !== "communications") {
             const name = d.label || "";
             const low = name.toLowerCase();
-            // Filter out built-in laptop speakers/mics so external Type-C interfaces stand out
-            const isInternal = low.includes("realtek") || low.includes("built-in") || low.includes("internal") || low.includes("macbook");
-            if (name && !isInternal && !foundExternals.includes(name)) {
+
+            // Block all built-in laptop audio/microphone arrays
+            const isInternal =
+              low.includes("amd audio") ||
+              low.includes("microphone array") ||
+              low.includes("realtek") ||
+              low.includes("intel") ||
+              low.includes("high definition audio") ||
+              low.includes("built-in") ||
+              low.includes("internal") ||
+              low.includes("macbook");
+
+            // Only allow external USB-C / Smart Guitar / Audio Interface devices
+            const isExternalHardware =
+              low.includes("usb") ||
+              low.includes("enya") ||
+              low.includes("nexg") ||
+              low.includes("1235:") ||
+              low.includes("guitar") ||
+              low.includes("interface") ||
+              low.includes("midi") ||
+              low.includes("amp") ||
+              low.includes("focusrite") ||
+              low.includes("behringer") ||
+              low.includes("boss") ||
+              low.includes("line 6") ||
+              low.includes("zoom");
+
+            if (name && !isInternal && isExternalHardware && !foundExternals.includes(name)) {
               foundExternals.push(name);
             }
           }
@@ -605,17 +631,18 @@
       }
     }
 
-    // Check Paired Raw WebUSB Devices
+    // Check Paired Raw WebUSB Devices (Exclude internal Realtek/hub controllers like VID 0x0bda)
     if (navigator.usb && navigator.usb.getDevices) {
       try {
         const usbDevs = await navigator.usb.getDevices();
         usbDevs.forEach(u => {
-          const label = `${u.productName || "Type-C USB Device"} (${u.vendorId.toString(16)}:${u.productId.toString(16)})`;
+          // 0x0bda is Realtek internal laptop card/Bluetooth/camera controller
+          if (u.vendorId === 0x0bda) return;
+          const label = `${u.productName || "Type-C Smart Guitar / Audio"} (${u.vendorId.toString(16)}:${u.productId.toString(16)})`;
           if (!foundExternals.includes(label)) foundExternals.push(label);
         });
       } catch (_) {}
     }
-
     // Update Sync State based on real Type-C connection
     if (foundExternals.length > 0) {
       syncState.connected = true;
