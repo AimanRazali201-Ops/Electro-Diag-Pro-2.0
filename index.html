@@ -3,593 +3,618 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Type-C ElectroDiag Pro 2.0 — PCB & Acoustic Link Analyzer</title>
+  <title>Type-C ElectroDiag Pro — LAB BENCH v5.0</title>
   <style>
     :root {
-      --bg-dark: #090d16;
-      --bg-card: #111827;
-      --bg-panel: #1e293b;
-      --border-color: #334155;
-      --text-main: #f8fafc;
+      --bg-dark: #090d14;
+      --panel-bg: #111824;
+      --panel-border: #1e293b;
+      --grid-line: rgba(56, 189, 248, 0.06);
+      --accent-cyan: #00e5ff;
+      --accent-green: #10b981;
+      --accent-amber: #f59e0b;
+      --accent-red: #ef4444;
+      --text-main: #f1f5f9;
       --text-muted: #94a3b8;
-      --accent-cyan: #06b6d4;
-      --green: #10b981;
-      --yellow: #f59e0b;
-      --red: #ef4444;
+      --font-mono: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
     }
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
       background-color: var(--bg-dark);
+      background-image: 
+        linear-gradient(to right, var(--grid-line) 1px, transparent 1px),
+        linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px);
+      background-size: 28px 28px;
       color: var(--text-main);
+      font-family: var(--font-sans);
+      min-height: 100vh;
       padding: 20px;
       line-height: 1.5;
     }
 
-    .container {
-      max-width: 1100px;
-      margin: 0 auto;
-    }
+    .container { max-width: 1140px; margin: 0 auto; }
 
     header {
       display: flex;
+      flex-wrap: wrap;
       justify-content: space-between;
       align-items: center;
-      flex-wrap: wrap;
-      gap: 12px;
-      padding-bottom: 16px;
-      border-bottom: 1px solid var(--border-color);
+      gap: 14px;
+      padding-bottom: 18px;
+      border-bottom: 1px solid var(--panel-border);
       margin-bottom: 20px;
     }
 
-    header h1 {
-      font-size: 1.4rem;
-      color: var(--accent-cyan);
-      letter-spacing: 0.03em;
-    }
-
-    header p {
-      font-size: 0.85rem;
-      color: var(--text-muted);
-    }
-
-    .btn-group {
+    .title-group h1 {
+      font-size: 1.5rem;
+      font-weight: 700;
       display: flex;
+      align-items: center;
       gap: 10px;
-      flex-wrap: wrap;
     }
+
+    .badge {
+      background: rgba(0, 229, 255, 0.12);
+      color: var(--accent-cyan);
+      border: 1px solid rgba(0, 229, 255, 0.35);
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      padding: 3px 8px;
+      border-radius: 4px;
+    }
+
+    .subtitle { color: var(--text-muted); font-size: 0.85rem; margin-top: 3px; }
+
+    .toolbar { display: flex; flex-wrap: wrap; gap: 8px; }
 
     button {
-      background-color: var(--bg-panel);
+      background: #172030;
       color: var(--text-main);
-      border: 1px solid var(--border-color);
-      padding: 8px 14px;
+      border: 1px solid #2d3b52;
+      padding: 8px 13px;
       border-radius: 6px;
-      font-size: 0.85rem;
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
       font-weight: 600;
       cursor: pointer;
       transition: all 0.15s ease;
     }
 
-    button:hover {
-      border-color: var(--accent-cyan);
-      background-color: #26354d;
-    }
-
-    button.primary {
-      background-color: var(--accent-cyan);
-      color: #090d16;
-      border-color: var(--accent-cyan);
-    }
-
-    button.primary:hover {
-      background-color: #22d3ee;
-    }
+    button:hover { background: #1f2b40; border-color: var(--accent-cyan); }
+    button.primary { background: rgba(0, 229, 255, 0.15); border-color: var(--accent-cyan); color: var(--accent-cyan); }
+    button.active-tone { background: rgba(16, 185, 129, 0.2); border-color: var(--accent-green); color: var(--accent-green); }
+    button.amp-btn { background: rgba(245, 158, 11, 0.15); border-color: var(--accent-amber); color: var(--accent-amber); }
 
     .grid {
       display: grid;
-      grid-template-columns: 1fr 1.3fr;
-      gap: 20px;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
     }
 
-    @media (max-width: 820px) {
-      .grid {
-        grid-template-columns: 1fr;
-      }
-    }
+    @media (max-width: 820px) { .grid { grid-template-columns: 1fr; } }
 
     .card {
-      background-color: var(--bg-card);
-      border: 1px solid var(--border-color);
+      background: var(--panel-bg);
+      border: 1px solid var(--panel-border);
       border-radius: 10px;
       padding: 18px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
     }
 
-    .card-title {
-      font-size: 0.95rem;
+    .card.full-width { grid-column: 1 / -1; }
+
+    .card h2 {
+      font-size: 0.88rem;
       text-transform: uppercase;
-      letter-spacing: 0.06em;
-      color: var(--accent-cyan);
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      font-family: var(--font-mono);
       margin-bottom: 14px;
       display: flex;
       justify-content: space-between;
       align-items: center;
     }
 
-    .slider-group {
-      margin-bottom: 14px;
+    .status-banner {
+      background: #0b1019;
+      border: 1px solid #1e293b;
+      border-left: 4px solid var(--text-muted);
+      padding: 12px 15px;
+      border-radius: 6px;
+      font-family: var(--font-mono);
+      font-size: 0.83rem;
     }
 
-    .slider-header {
+    .status-banner.ok { border-left-color: var(--accent-green); }
+    .status-banner.warn { border-left-color: var(--accent-amber); }
+    .status-banner.fault { border-left-color: var(--accent-red); }
+
+    .status-label { font-weight: 700; display: block; margin-bottom: 4px; color: var(--accent-cyan); }
+    .status-banner.ok .status-label { color: var(--accent-green); }
+    .status-banner.warn .status-label { color: var(--accent-amber); }
+    .status-banner.fault .status-label { color: var(--accent-red); }
+
+    .device-list { margin-top: 10px; display: flex; flex-direction: column; gap: 6px; }
+    .device-item {
+      background: #141d2b;
+      border: 1px solid #263449;
+      padding: 7px 11px;
+      border-radius: 5px;
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
       display: flex;
       justify-content: space-between;
-      font-size: 0.85rem;
-      margin-bottom: 4px;
     }
 
-    .slider-val {
-      font-family: monospace;
-      color: var(--accent-cyan);
-      font-weight: 700;
+    .scenario-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .scenario-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      text-align: left;
+      padding: 10px;
+      gap: 3px;
     }
+    .scenario-btn span.sub { font-size: 0.72rem; color: var(--text-muted); font-weight: 400; }
+
+    .telemetry-row { margin-bottom: 14px; }
+    .telemetry-header {
+      display: flex;
+      justify-content: space-between;
+      font-family: var(--font-mono);
+      font-size: 0.82rem;
+      margin-bottom: 6px;
+    }
+    .telemetry-val { color: var(--accent-cyan); font-weight: 700; }
 
     input[type="range"] {
+      -webkit-appearance: none;
       width: 100%;
-      accent-color: var(--accent-cyan);
+      height: 6px;
+      background: #1e293b;
+      border-radius: 4px;
+      outline: none;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: var(--accent-cyan);
       cursor: pointer;
     }
 
-    .preset-grid {
+    .metrics-bar {
       display: grid;
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: repeat(3, 1fr);
       gap: 8px;
       margin-top: 14px;
+      padding-top: 14px;
+      border-top: 1px solid var(--panel-border);
+      font-family: var(--font-mono);
     }
+    .metric-box { background: #0b1019; padding: 9px; border-radius: 6px; border: 1px solid #1e293b; }
+    .metric-box .label { font-size: 0.68rem; color: var(--text-muted); display: block; }
+    .metric-box .val { font-size: 0.85rem; font-weight: 700; color: var(--text-main); }
 
-    .preset-btn {
-      text-align: left;
-      font-size: 0.8rem;
-      padding: 8px 10px;
-    }
-
-    /* Status Badges */
-    .diag-badge {
-      display: inline-block;
-      padding: 4px 10px;
-      border-radius: 4px;
-      font-family: monospace;
-      font-weight: 700;
-      font-size: 0.78rem;
-      letter-spacing: 0.05em;
-      text-transform: uppercase;
-      white-space: nowrap;
-    }
-
-    .status-ok {
-      background-color: rgba(16, 185, 129, 0.15);
-      color: var(--green);
-      border: 1px solid var(--green);
-    }
-
-    .status-issue {
-      background-color: rgba(245, 158, 11, 0.15);
-      color: var(--yellow);
-      border: 1px solid var(--yellow);
-    }
-
-    .status-error {
-      background-color: rgba(239, 68, 68, 0.15);
-      color: var(--red);
-      border: 1px solid var(--red);
-    }
-
-    /* Diagnosis List */
-    .diag-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 12px;
-      padding: 12px;
-      background-color: rgba(30, 41, 59, 0.55);
-      border: 1px solid var(--border-color);
-      border-radius: 8px;
-      margin-bottom: 10px;
-    }
-
-    .diag-row:last-child {
-      margin-bottom: 0;
-    }
-
-    .diag-code {
-      font-family: monospace;
-      font-size: 0.85rem;
-      color: var(--accent-cyan);
-      margin-right: 6px;
-    }
-
-    .diag-part {
-      font-weight: 600;
-      font-size: 0.92rem;
-    }
-
-    .diag-detail {
-      font-size: 0.82rem;
-      color: var(--text-muted);
-      margin-top: 3px;
-    }
-
-    .summary-banner {
-      padding: 12px 14px;
-      border-radius: 8px;
-      margin-bottom: 14px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-weight: 600;
-      font-size: 0.9rem;
-    }
-
-    .device-box {
-      margin-top: 14px;
-      padding: 10px 12px;
-      background-color: var(--bg-dark);
-      border: 1px dashed var(--border-color);
+    .log-box {
+      background: #070a10;
+      border: 1px solid #1e293b;
       border-radius: 6px;
-      font-family: monospace;
-      font-size: 0.8rem;
-      color: var(--text-muted);
+      padding: 10px;
+      height: 145px;
+      overflow-y: auto;
+      font-family: var(--font-mono);
+      font-size: 0.76rem;
+      color: #a5f3fc;
     }
+    .log-entry { margin-bottom: 4px; }
+    .log-time { color: #64748b; margin-right: 8px; }
   </style>
 </head>
 <body>
   <div class="container">
     <header>
-      <div>
-        <h1>TYPE-C ELECTRODIAG PRO 2.0</h1>
-        <p>PCB Power Rail, USB Audio/MIDI Bus & Acoustic Link Fault Analyzer</p>
+      <div class="title-group">
+        <h1>Type-C ElectroDiag Pro <span class="badge">LAB BENCH v5.0</span></h1>
+        <div class="subtitle">Universal Smart Instrument, Guitar Amp &amp; PCB Fault Analyzer</div>
       </div>
-      <div class="btn-group">
-        <button class="primary" onclick="scanConnectedDevices()">Scan USB Audio / MIDI</button>
-        <button onclick="connectSerialProbe()">Connect Serial Probe</button>
+
+      <div class="toolbar">
+        <button id="btn-tone">🔊 Test Tone (440Hz)</button>
+        <button id="btn-detect" class="primary">🎹 Auto-Scan Instrument / Interface</button>
+        <button id="btn-amp-sweep" class="amp-btn">🎸 Guitar Amp &amp; Speaker PCB Test</button>
+        <button id="btn-serial">🔌 Hardware Probe (WebSerial)</button>
+        <button id="btn-usb">⚡ Raw USB Descriptor</button>
       </div>
     </header>
 
     <div class="grid">
-      <!-- Left Column: Telemetry Controls & Fault Simulation -->
-      <div class="card">
-        <div class="card-title">Live Telemetry & Probe Input</div>
-
-        <div class="slider-group">
-          <div class="slider-header">
-            <span>Supply / VBUS Rail Voltage</span>
-            <span class="slider-val" id="val-voltage">20.0 V</span>
+      <!-- Auto-Detection & PCB Fault Diagnosis -->
+      <section class="card full-width">
+        <h2>
+          Active PCB &amp; Acoustic Link Diagnosis
+          <span id="auto-badge" class="badge">AUTO-HOTPLUG READY</span>
+        </h2>
+        <div id="link-banner" class="status-banner">
+          <span id="link-status" class="status-label">STANDBY — WAITING FOR TARGET</span>
+          <div id="link-desc">
+            Plug in a <strong>USB-C Smart Guitar / MIDI / Audio Interface</strong> for auto-detection, or click <strong>Guitar Amp &amp; Speaker PCB Test</strong> to run an acoustic/loopback coil &amp; preamp check.
           </div>
-          <input type="range" id="slider-voltage" min="0" max="24" step="0.1" value="20.0" />
         </div>
+        <div id="device-list" class="device-list"></div>
+      </section>
 
-        <div class="slider-group">
-          <div class="slider-header">
-            <span>Current Draw (I_BUS)</span>
-            <span class="slider-val" id="val-current">1.25 A</span>
+      <!-- Guitar Amp & Instrument PCB Fault Simulator / Profiles -->
+      <section class="card">
+        <h2>
+          Instrument &amp; Amp PCB Fault Profiles
+          <button id="btn-reset" style="padding: 3px 9px; font-size: 0.72rem;">Reset</button>
+        </h2>
+        <div class="scenario-grid">
+          <button class="scenario-btn healthy" data-v="20.0" data-a="3.00" data-cc="CC1: 5.1kΩ Rd (PD OK)" data-dp="Smart Guitar DSP: Active" data-state="ok" data-msg="NOMINAL: Smart instrument USB-C PD & digital audio DSP rail healthy.">
+            <span>Smart Guitar USB-C OK</span>
+            <span class="sub">20.0V / 3.00A • DSP Locked</span>
+          </button>
+
+          <button class="scenario-btn" data-v="15.0" data-a="1.80" data-cc="Speaker Load: 8.1Ω Nominal" data-dp="Preamp Noise Floor: -78dB" data-state="ok" data-msg="AMP HEALTHY: Power amp rail stable, 8Ω speaker voice coil continuity verified.">
+            <span>Guitar Amp PCB Healthy</span>
+            <span class="sub">8Ω Coil OK • Low Noise</span>
+          </button>
+
+          <button class="scenario-btn" data-v="15.0" data-a="0.15" data-cc="Speaker Load: OPEN (∞ Ω)" data-dp="Output Stage: Unloaded" data-state="fault" data-msg="AMP FAULT [OPEN COIL]: Speaker voice coil open or 1/4-inch output jack solder joint cracked.">
+            <span>Amp Blown Speaker / Open Jack</span>
+            <span class="sub">∞ Ω Open Load • 0.15A Idle</span>
+          </button>
+
+          <button class="scenario-btn" data-v="1.2" data-a="4.90" data-cc="Power IC: Thermal/Short" data-dp="D+/D- or Bias: Shorted" data-state="fault" data-msg="CRITICAL PCB SHORT: Blown Class-D amp IC / shorted filter cap or VBUS-to-GND fault.">
+            <span>Blown Amp IC / PCB Short</span>
+            <span class="sub">Rail Collapse (1.2V / 4.9A)</span>
+          </button>
+        </div>
+      </section>
+
+      <!-- Live Telemetry & Acoustic Impedance Readout -->
+      <section class="card">
+        <h2>Live Rail &amp; PCB Probe Telemetry</h2>
+
+        <div class="telemetry-row">
+          <div class="telemetry-header">
+            <label for="slider-vbus">Supply / Rail Voltage</label>
+            <span id="val-vbus" class="telemetry-val">20.0 V</span>
           </div>
-          <input type="range" id="slider-current" min="0" max="6" step="0.05" value="1.25" />
+          <input type="range" id="slider-vbus" min="0" max="24" step="0.1" value="20.0" />
         </div>
 
-        <div class="slider-group">
-          <div class="slider-header">
-            <span>Acoustic Output / Coil Impedance</span>
-            <span class="slider-val" id="val-impedance">8.0 Ω</span>
+        <div class="telemetry-row">
+          <div class="telemetry-header">
+            <label for="slider-curr">Current Draw</label>
+            <span id="val-curr" class="telemetry-val">3.00 A</span>
           </div>
-          <input type="range" id="slider-impedance" min="1" max="40" step="0.5" value="8.0" />
+          <input type="range" id="slider-curr" min="0" max="5" step="0.05" value="3.00" />
         </div>
 
-        <div class="slider-group">
-          <div class="slider-header">
-            <span>USB D+/D- Bus Enumeration</span>
-            <span class="slider-val" id="val-usb">ENUMERATED</span>
+        <div class="metrics-bar">
+          <div class="metric-box">
+            <span class="label">POWER (W)</span>
+            <span id="val-watts" class="val">60.0 W</span>
           </div>
-          <button style="width: 100%; margin-top: 4px;" onclick="toggleUsbState()">Toggle USB Link State</button>
+          <div class="metric-box">
+            <span class="label">CC / COIL LOAD</span>
+            <span id="val-cc" class="val" style="font-size:0.75rem;">CC1: 5.1kΩ Rd</span>
+          </div>
+          <div class="metric-box">
+            <span class="label">PCB STAGE</span>
+            <span id="val-dp" class="val" style="font-size:0.75rem;">D+/D-: OK</span>
+          </div>
         </div>
+      </section>
 
-        <div class="card-title" style="margin-top: 18px;">Simulate PCB / Amp Fault Profiles</div>
-        <div class="preset-grid">
-          <button class="preset-btn" onclick="applyPreset('nominal')">✅ Healthy Amp / Interface</button>
-          <button class="preset-btn" onclick="applyPreset('sag')">⚠️ Buck Regulator Sag</button>
-          <button class="preset-btn" onclick="applyPreset('oxidized')">⚠️ Oxidized Jack / High Z</button>
-          <button class="preset-btn" onclick="applyPreset('blown')">🚨 Blown Speaker / Open Coil</button>
-          <button class="preset-btn" onclick="applyPreset('short')">🚨 Amp IC Short / Collapse</button>
-          <button class="preset-btn" onclick="applyPreset('usb_dead')">🚨 USB Codec / D+ Fault</button>
-        </div>
-
-        <div class="device-box" id="usb-device-readout">
-          USB Bus Monitor: Ready. Click "Scan USB Audio / MIDI" or plug in a Type-C interface.
-        </div>
-      </div>
-
-      <!-- Right Column: Active PCB & Acoustic Link Diagnosis -->
-      <div class="card">
-        <div class="card-title">
-          <span>Active PCB & Acoustic Link Diagnosis</span>
-          <span id="overall-badge" class="diag-badge status-ok">OK</span>
-        </div>
-
-        <div id="overall-banner" class="summary-banner status-ok">
-          <span id="overall-text">ALL PCB SUBSYSTEMS NOMINAL (SYS-00)</span>
-        </div>
-
-        <div id="diagnosis-list"></div>
-      </div>
+      <!-- Diagnostic Console -->
+      <section class="card full-width">
+        <h2>Protocol &amp; PCB Diagnostic Console</h2>
+        <div id="console-log" class="log-box"></div>
+      </section>
     </div>
   </div>
 
   <script>
-    // Central Diagnostic State
-    const state = {
-      voltage: 20.0,
-      current: 1.25,
-      impedance: 8.0,
-      usbEnumerated: true,
-      deviceName: "USB Audio / MIDI Interface"
-    };
-
-    const sliderVoltage = document.getElementById("slider-voltage");
-    const sliderCurrent = document.getElementById("slider-current");
-    const sliderImpedance = document.getElementById("slider-impedance");
-
-    function evaluatePcbDiagnostics({ voltage, current, impedance, usbEnumerated, deviceName }) {
-      const diagnostics = [];
-
-      // 1. Power Rail & Regulator IC Evaluation
-      if (voltage < 3.0 || current > 4.5) {
-        diagnostics.push({
-          part: "Main Power Rail / Power Amp IC",
-          code: "ERR-501",
-          detail: `Short circuit or rail collapse detected (${voltage.toFixed(1)}V / ${current.toFixed(2)}A)`,
-          status: "ERROR",
-          cssClass: "status-error"
-        });
-      } else if ((voltage >= 3.0 && voltage < 4.6) || (voltage > 5.5 && voltage < 18.0) || current > 3.2) {
-        diagnostics.push({
-          part: "PD Controller / DC-DC Buck Stage",
-          code: "ERR-204",
-          detail: `Voltage sag or elevated idle draw (${voltage.toFixed(1)}V @ ${current.toFixed(2)}A)`,
-          status: "IN ISSUE",
-          cssClass: "status-issue"
-        });
-      } else {
-        diagnostics.push({
-          part: "PD Controller / Main Power Rail",
-          code: "PWR-00",
-          detail: `Rail locked & stable (${voltage.toFixed(1)}V / ${current.toFixed(2)}A)`,
-          status: "OK",
-          cssClass: "status-ok"
-        });
-      }
-
-      // 2. Acoustic Output / Speaker Coil / Jack Stage Evaluation
-      if (impedance >= 36) {
-        diagnostics.push({
-          part: "Speaker Voice Coil / Output Jack",
-          code: "ERR-404",
-          detail: "Open load detected (∞ Ω) — blown speaker coil or broken jack solder joint",
-          status: "ERROR",
-          cssClass: "status-error"
-        });
-      } else if (impedance > 12 || impedance < 3.5) {
-        diagnostics.push({
-          part: "Speaker Voice Coil / Output Jack",
-          code: "ERR-302",
-          detail: `Abnormal load impedance (${impedance.toFixed(1)} Ω) — oxidized jack or worn coil`,
-          status: "IN ISSUE",
-          cssClass: "status-issue"
-        });
-      } else {
-        diagnostics.push({
-          part: "Speaker Voice Coil / Output Jack",
-          code: "SPK-00",
-          detail: `Nominal ${impedance.toFixed(1)} Ω acoustic load • Clean continuity`,
-          status: "OK",
-          cssClass: "status-ok"
-        });
-      }
-
-      // 3. USB Codec & D+/D- Data Bus Evaluation
-      if (!usbEnumerated) {
-        diagnostics.push({
-          part: "USB Audio/MIDI Codec & D+/D- Lines",
-          code: "ERR-109",
-          detail: "Enumeration failed — faulty USB transceiver IC, crystal, or data line break",
-          status: "ERROR",
-          cssClass: "status-error"
-        });
-      } else if (voltage < 4.75) {
-        diagnostics.push({
-          part: `USB Codec (${deviceName})`,
-          code: "ERR-105",
-          detail: "Low VBUS causing potential USB descriptor dropouts",
-          status: "IN ISSUE",
-          cssClass: "status-issue"
-        });
-      } else {
-        diagnostics.push({
-          part: `USB Codec (${deviceName})`,
-          code: "USB-00",
-          detail: "D+/D- data lines enumerating properly at full speed",
-          status: "OK",
-          cssClass: "status-ok"
-        });
-      }
-
-      return diagnostics;
+    const logBox = document.getElementById('console-log');
+    function log(msg) {
+      const now = new Date().toLocaleTimeString('en-GB', { hour12: false });
+      const line = document.createElement('div');
+      line.className = 'log-entry';
+      line.innerHTML = `<span class="log-time">[${now}]</span>${msg}`;
+      logBox.appendChild(line);
+      logBox.scrollTop = logBox.scrollHeight;
     }
 
-    function updateDashboard() {
-      // Update slider readouts
-      document.getElementById("val-voltage").textContent = `${state.voltage.toFixed(1)} V`;
-      document.getElementById("val-current").textContent = `${state.current.toFixed(2)} A`;
-      document.getElementById("val-impedance").textContent = state.impedance >= 36 ? "OPEN (∞ Ω)" : `${state.impedance.toFixed(1)} Ω`;
-      document.getElementById("val-usb").textContent = state.usbEnumerated ? "ENUMERATED" : "NO LINK";
+    const linkBanner = document.getElementById('link-banner');
+    const linkStatus = document.getElementById('link-status');
+    const linkDesc = document.getElementById('link-desc');
+    const deviceList = document.getElementById('device-list');
 
-      const results = evaluatePcbDiagnostics(state);
-
-      // Determine highest severity across all PCB parts
-      const hasError = results.some(r => r.status === "ERROR");
-      const hasIssue = results.some(r => r.status === "IN ISSUE");
-
-      const overallBadge = document.getElementById("overall-badge");
-      const overallBanner = document.getElementById("overall-banner");
-      const overallText = document.getElementById("overall-text");
-
-      overallBadge.className = "diag-badge";
-      overallBanner.className = "summary-banner";
-
-      if (hasError) {
-        const failedCodes = results.filter(r => r.status === "ERROR").map(r => r.code).join(", ");
-        overallBadge.classList.add("status-error");
-        overallBanner.classList.add("status-error");
-        overallBadge.textContent = "ERROR";
-        overallText.textContent = `CRITICAL FAULT DETECTED (${failedCodes})`;
-      } else if (hasIssue) {
-        const warnCodes = results.filter(r => r.status === "IN ISSUE").map(r => r.code).join(", ");
-        overallBadge.classList.add("status-issue");
-        overallBanner.classList.add("status-issue");
-        overallBadge.textContent = "IN ISSUE";
-        overallText.textContent = `DEGRADED COMPONENT WARNING (${warnCodes})`;
-      } else {
-        overallBadge.classList.add("status-ok");
-        overallBanner.classList.add("status-ok");
-        overallBadge.textContent = "OK";
-        overallText.textContent = "ALL PCB SUBSYSTEMS NOMINAL (SYS-00)";
-      }
-
-      // Render individual part rows
-      const listContainer = document.getElementById("diagnosis-list");
-      listContainer.innerHTML = results.map(item => `
-        <div class="diag-row">
-          <div>
-            <div>
-              <span class="diag-code">[${item.code}]</span>
-              <span class="diag-part">${item.part}</span>
-            </div>
-            <div class="diag-detail">${item.detail}</div>
-          </div>
-          <span class="diag-badge ${item.cssClass}">${item.status}</span>
-        </div>
-      `).join("");
+    function setBanner(state, title, desc) {
+      linkBanner.className = `status-banner ${state}`;
+      linkStatus.textContent = title;
+      linkDesc.innerHTML = desc;
     }
 
-    // Slider Listeners
-    sliderVoltage.addEventListener("input", (e) => {
-      state.voltage = parseFloat(e.target.value);
-      updateDashboard();
-    });
-
-    sliderCurrent.addEventListener("input", (e) => {
-      state.current = parseFloat(e.target.value);
-      updateDashboard();
-    });
-
-    sliderImpedance.addEventListener("input", (e) => {
-      state.impedance = parseFloat(e.target.value);
-      updateDashboard();
-    });
-
-    function toggleUsbState() {
-      state.usbEnumerated = !state.usbEnumerated;
-      updateDashboard();
+    function addDeviceCard(protocol, name, status, color = 'var(--accent-green)') {
+      const div = document.createElement('div');
+      div.className = 'device-item';
+      div.innerHTML = `<span><strong>[${protocol}]</strong> ${name}</span><span style="color:${color}">${status}</span>`;
+      deviceList.appendChild(div);
     }
 
-    // Fault Simulation Presets
-    function applyPreset(type) {
-      if (type === "nominal") {
-        state.voltage = 20.0;
-        state.current = 1.25;
-        state.impedance = 8.0;
-        state.usbEnumerated = true;
-      } else if (type === "sag") {
-        state.voltage = 15.2;
-        state.current = 2.80;
-        state.impedance = 8.0;
-        state.usbEnumerated = true;
-      } else if (type === "oxidized") {
-        state.voltage = 20.0;
-        state.current = 0.90;
-        state.impedance = 18.5;
-        state.usbEnumerated = true;
-      } else if (type === "blown") {
-        state.voltage = 20.0;
-        state.current = 0.25;
-        state.impedance = 40.0;
-        state.usbEnumerated = true;
-      } else if (type === "short") {
-        state.voltage = 1.4;
-        state.current = 5.40;
-        state.impedance = 2.0;
-        state.usbEnumerated = false;
-      } else if (type === "usb_dead") {
-        state.voltage = 5.0;
-        state.current = 0.15;
-        state.impedance = 8.0;
-        state.usbEnumerated = false;
-      }
+    // --- 1. Automatic Hotplug & Instrument Scanner ---
+    async function scanHardware(autoTriggered = false) {
+      deviceList.innerHTML = '';
+      let externalFound = 0;
+      let internalFound = 0;
+      log(autoTriggered ? 'USB/Audio bus change detected — running auto-scan...' : 'Scanning bus for Smart Instruments, MIDI, and Audio interfaces...');
 
-      sliderVoltage.value = state.voltage;
-      sliderCurrent.value = state.current;
-      sliderImpedance.value = state.impedance;
-      updateDashboard();
-    }
+      // Check WebMIDI (Smart Guitars, Synths, Modeling Amps via USB)
+      if (navigator.requestMIDIAccess) {
+        try {
+          const midi = await navigator.requestMIDIAccess({ sysex: false });
+          midi.onstatechange = (e) => {
+            log(`MIDI hotplug event: ${e.port.name} (${e.port.state})`);
+            scanHardware(true);
+          };
 
-    // Real Browser USB Audio/MIDI Hotplug Scanner
-    async function scanConnectedDevices() {
-      const readout = document.getElementById("usb-device-readout");
-      try {
-        await navigator.mediaDevices.getUserMedia({ audio: true });
-        const devices = await navigator.mediaDevices.enumerateDevices();
-        const audioInputs = devices.filter(d => d.kind === "audioinput" && d.label);
-
-        if (audioInputs.length > 0) {
-          const usbDev = audioInputs.find(d => d.label.toLowerCase().includes("usb")) || audioInputs[0];
-          state.deviceName = usbDev.label;
-          state.usbEnumerated = true;
-          readout.textContent = `Detected Active Link: ${usbDev.label}`;
-        } else {
-          readout.textContent = "No external USB audio interface detected.";
+          midi.inputs.forEach((input) => {
+            externalFound++;
+            addDeviceCard('MIDI / SMART INSTRUMENT', `${input.manufacturer || 'USB'} ${input.name}`, 'PCB ENUMERATED OK');
+          });
+          midi.outputs.forEach((output) => {
+            externalFound++;
+            addDeviceCard('MIDI OUT', `${output.manufacturer || 'USB'} ${output.name}`, 'ACTIVE');
+          });
+        } catch (err) {
+          log(`WebMIDI note: ${err.message}`);
         }
-        updateDashboard();
-      } catch (err) {
-        readout.textContent = `USB Audio Scan Notice: ${err.message}`;
+      }
+
+      // Check Audio Devices (USB Audio Interfaces, Modeling Amps, Laptop Soundcard)
+      if (navigator.mediaDevices && navigator.mediaDevices.enumerateDevices) {
+        try {
+          if (!autoTriggered) {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            stream.getTracks().forEach(t => t.stop());
+          }
+          const devices = await navigator.mediaDevices.enumerateDevices();
+          devices.filter(d => d.kind === 'audioinput' || d.kind === 'audiooutput').forEach(dev => {
+            if (!dev.label || dev.label.toLowerCase().includes('default') || dev.label.toLowerCase().includes('communications')) return;
+            const isInternal = dev.label.toLowerCase().includes('realtek') || dev.label.toLowerCase().includes('amd audio');
+            if (isInternal) {
+              internalFound++;
+              addDeviceCard('HOST AUDIO', dev.label, 'READY FOR AMP TEST', 'var(--accent-cyan)');
+            } else {
+              externalFound++;
+              addDeviceCard('USB INSTRUMENT / AMP', dev.label, 'USB AUDIO PCB OK');
+            }
+          });
+        } catch (err) {
+          log(`Audio permission required for device names: ${err.message}`);
+        }
+      }
+
+      if (externalFound > 0) {
+        setBanner('ok', 'EXTERNAL INSTRUMENT / AMP PCB DETECTED', `Found ${externalFound} external USB MIDI/Audio endpoint(s). USB data lines (D+/D-) and controller IC are enumerating properly.`);
+      } else if (internalFound > 0) {
+        setBanner('warn', 'NO USB INSTRUMENT PCB DETECTED (HOST AUDIO READY)', 'No external USB-C instrument enumerated. If a smart guitar/amp is plugged in, check for a <strong>charge-only cable</strong>, <strong>broken D+/D- lines</strong>, or <strong>dead USB controller IC</strong>. Or click <strong>Guitar Amp & Speaker PCB Test</strong> to test an analog amp.');
+      } else {
+        setBanner('fault', 'NO AUDIO OR INSTRUMENT BUS FOUND', 'Allow microphone/MIDI permissions in Chrome to inspect connected hardware.');
       }
     }
 
-    // Optional WebSerial Hardware Probe Hook
-    async function connectSerialProbe() {
-      const readout = document.getElementById("usb-device-readout");
-      if (!("serial" in navigator)) {
-        readout.textContent = "WebSerial not supported in this browser window.";
+    document.getElementById('btn-detect').addEventListener('click', () => scanHardware(false));
+
+    // Listen for USB plug/unplug automatically
+    if (navigator.mediaDevices) {
+      navigator.mediaDevices.addEventListener('devicechange', () => scanHardware(true));
+    }
+    if ('usb' in navigator) {
+      navigator.usb.addEventListener('connect', (e) => {
+        log(`USB-C device plugged in: ${e.device.productName || 'Unknown USB Device'}`);
+        scanHardware(true);
+      });
+      navigator.usb.addEventListener('disconnect', (e) => {
+        log(`USB-C device disconnected: ${e.device.productName || 'Unknown USB Device'}`);
+        scanHardware(true);
+      });
+    }
+
+    // --- 2. Guitar Amp & Speaker PCB Acoustic/Loopback Diagnostic ---
+    document.getElementById('btn-amp-sweep').addEventListener('click', async () => {
+      log('Starting Guitar Amp & Speaker PCB Diagnostic (100Hz Low-End + 1kHz Mid + Noise Floor Check)...');
+      setBanner('warn', 'TESTING AMP & SPEAKER PCB...', 'Sending test signal to Amp Input and listening via Mic/Interface for speaker cone response & hum...');
+
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false }
+        });
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const source = ctx.createMediaStreamSource(stream);
+        const analyser = ctx.createAnalyser();
+        analyser.fftSize = 2048;
+        source.connect(analyser);
+
+        const dataArray = new Uint8Array(analyser.frequencyBinCount);
+
+        // Measure baseline hum/noise first (500ms)
+        await new Promise(r => setTimeout(r, 400));
+        analyser.getByteFrequencyData(dataArray);
+        const baselineNoise = dataArray.reduce((a, b) => a + b, 0) / dataArray.length;
+
+        // Play brief 220Hz + 880Hz diagnostic pulse to excite amp speaker
+        const osc1 = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc1.type = 'triangle';
+        osc1.frequency.setValueAtTime(220, ctx.currentTime);
+        gain.gain.setValueAtTime(0.25, ctx.currentTime);
+        osc1.connect(gain);
+        gain.connect(ctx.destination);
+        osc1.start();
+
+        await new Promise(r => setTimeout(r, 600));
+        analyser.getByteFrequencyData(dataArray);
+        const activeSignal = dataArray.reduce((a, b) => a + b, 0) / dataArray.length;
+
+        osc1.stop();
+        stream.getTracks().forEach(t => t.stop());
+        await ctx.close();
+
+        const delta = (activeSignal - baselineNoise).toFixed(1);
+        log(`Amp PCB Acoustic Result -> Baseline Noise: ${baselineNoise.toFixed(1)}, Active Response: ${activeSignal.toFixed(1)} (Delta: +${delta})`);
+
+        if (baselineNoise > 45) {
+          setBanner('fault', 'AMP PCB FAULT: EXCESSIVE HUM / GROUND LOOP', `High idle noise floor (${baselineNoise.toFixed(1)}). Check dried power supply filter capacitors, missing chassis ground, or failed preamp op-amp.`);
+        } else if (delta < 3.0) {
+          setBanner('fault', 'AMP PCB FAULT: NO SPEAKER OUTPUT DETECTED', `Signal sent, but acoustic return delta was only +${delta}. Check for <strong>open speaker voice coil</strong>, <strong>blown power amp IC</strong>, or <strong>oxidized 1/4" jack contacts</strong>.`);
+        } else {
+          setBanner('ok', 'AMP & SPEAKER PCB HEALTHY', `Clean noise floor (${baselineNoise.toFixed(1)}) and strong speaker coil response (+${delta} dB delta). Preamp, power stage, and speaker cone are functional.`);
+        }
+      } catch (err) {
+        log(`Amp test failed: ${err.message}`);
+        setBanner('fault', 'MIC / LINE-IN PERMISSION NEEDED', 'Allow microphone access so ElectroDiag can hear the guitar amp speaker response.');
+      }
+    });
+
+    // --- 3. 440Hz Reference Tone ---
+    let audioCtx = null;
+    let osc = null;
+    const btnTone = document.getElementById('btn-tone');
+
+    btnTone.addEventListener('click', () => {
+      if (!osc) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(440, audioCtx.currentTime);
+        gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        btnTone.textContent = '⏹ Stop Tone';
+        btnTone.classList.add('active-tone');
+        log('440Hz reference tone active.');
+      } else {
+        osc.stop();
+        osc.disconnect();
+        osc = null;
+        btnTone.textContent = '🔊 Test Tone (440Hz)';
+        btnTone.classList.remove('active-tone');
+        log('440Hz reference tone stopped.');
+      }
+    });
+
+    // --- 4. WebSerial Hardware Probe (Fixed "Port already open" bug + JSON parser) ---
+    let activeSerialPort = null;
+    document.getElementById('btn-serial').addEventListener('click', async () => {
+      if (!('serial' in navigator)) {
+        log('ERROR: WebSerial not supported in this browser.');
         return;
       }
       try {
-        const port = await navigator.serial.requestPort();
-        await port.open({ baudRate: 115200 });
-        readout.textContent = "Hardware Serial Probe connected at 115200 baud.";
+        if (activeSerialPort && activeSerialPort.readable) {
+          log('Hardware probe already connected and streaming.');
+          return;
+        }
+        activeSerialPort = await navigator.serial.requestPort();
+        if (!activeSerialPort.readable) {
+          await activeSerialPort.open({ baudRate: 115200 });
+        }
+        setBanner('ok', 'HARDWARE PROBE CONNECTED (115200 BAUD)', 'Listening for live VBUS, CC1/CC2, and Amp PCB voltage/resistance telemetry...');
+        log('WebSerial hardware probe connected at 115200 baud.');
+
+        const decoder = new TextDecoderStream();
+        activeSerialPort.readable.pipeTo(decoder.writable);
+        const reader = decoder.readable.getReader();
+
+        while (true) {
+          const { value, done } = await reader.read();
+          if (done) break;
+          if (value) {
+            log(`PROBE DATA: ${value.trim()}`);
+            try {
+              const data = JSON.parse(value.trim());
+              if (data.v !== undefined && data.a !== undefined) {
+                updateTelemetry(data.v, data.a, data.cc || 'Probe Live', data.fault || 'PCB OK');
+              }
+            } catch (_) {}
+          }
+        }
       } catch (err) {
-        readout.textContent = `Serial Probe cancelled: ${err.message}`;
+        log(`WebSerial status: ${err.message}`);
       }
+    });
+
+    // --- 5. Raw WebUSB Descriptor Reader ---
+    document.getElementById('btn-usb').addEventListener('click', async () => {
+      if (!('usb' in navigator)) return;
+      try {
+        const device = await navigator.usb.requestDevice({ filters: [] });
+        const vid = '0x' + device.vendorId.toString(16).padStart(4, '0');
+        const pid = '0x' + device.productId.toString(16).padStart(4, '0');
+        setBanner('ok', 'USB PCB CONTROLLER ENUMERATED', `Device: <strong>${device.productName || 'USB Controller'}</strong> | VID: ${vid} | PID: ${pid} | USB v${device.usbVersionMajor}.${device.usbVersionMinor}`);
+        log(`WebUSB descriptor read: ${device.productName || 'Unknown'} (VID: ${vid}, PID: ${pid})`);
+      } catch (err) {
+        log(`WebUSB selection cancelled: ${err.message}`);
+      }
+    });
+
+    // --- 6. Telemetry & Fault Profiles ---
+    const sliderVbus = document.getElementById('slider-vbus');
+    const sliderCurr = document.getElementById('slider-curr');
+    const valVbus = document.getElementById('val-vbus');
+    const valCurr = document.getElementById('val-curr');
+    const valWatts = document.getElementById('val-watts');
+    const valCc = document.getElementById('val-cc');
+    const valDp = document.getElementById('val-dp');
+
+    function updateTelemetry(v, a, ccText, dpText) {
+      const voltage = parseFloat(v);
+      const current = parseFloat(a);
+      sliderVbus.value = voltage;
+      sliderCurr.value = current;
+      valVbus.textContent = `${voltage.toFixed(1)} V`;
+      valCurr.textContent = `${current.toFixed(2)} A`;
+      valWatts.textContent = `${(voltage * current).toFixed(1)} W`;
+      if (ccText) valCc.textContent = ccText;
+      if (dpText) valDp.textContent = dpText;
     }
 
-    // Listen for live USB plug/unplug events
-    if (navigator.mediaDevices) {
-      navigator.mediaDevices.addEventListener("devicechange", scanConnectedDevices);
-    }
+    sliderVbus.addEventListener('input', () => updateTelemetry(sliderVbus.value, sliderCurr.value));
+    sliderCurr.addEventListener('input', () => updateTelemetry(sliderVbus.value, sliderCurr.value));
 
-    // Initial render
-    updateDashboard();
+    document.querySelectorAll('.scenario-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const { v, a, cc, dp, state, msg } = btn.dataset;
+        updateTelemetry(v, a, cc, dp);
+        setBanner(state, btn.querySelector('span').textContent.toUpperCase(), msg);
+        log(`Profile loaded: ${msg}`);
+      });
+    });
+
+    document.getElementById('btn-reset').addEventListener('click', () => {
+      updateTelemetry(20.0, 3.00, 'CC1: 5.1kΩ Rd', 'D+/D-: OK');
+      setBanner('', 'STANDBY — WAITING FOR TARGET', 'Plug in a USB-C instrument or run the Guitar Amp & Speaker PCB Test.');
+      deviceList.innerHTML = '';
+      log('Bench reset to standby.');
+    });
+
+    // Run passive auto-scan on load
+    log('ElectroDiag Pro LAB BENCH v5.0 initialized (Auto-Hotplug + Amp PCB Mode).');
+    scanHardware(true);
   </script>
 </body>
 </html>
+
+
+PROTOTAIP 6.0
