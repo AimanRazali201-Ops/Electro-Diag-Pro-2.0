@@ -310,23 +310,23 @@
           Instrument &amp; Amp PCB Fault Profiles
           <button id="btn-reset" style="padding: 3px 9px; font-size: 0.72rem;">Reset</button>
         </h2>
-        <div class="scenario-grid">
-          <button id="prof-guitar-ok" class="scenario-btn" data-v="5.0" data-a="0.48" data-cc="CC1: 5.1kΩ Rd (USB 5V)" data-dp="Smart Guitar DSP: Locked" data-state="ok" data-msg="SMART GUITAR PCB OK: Talian data D+/D- aktif, cip DSP & audio USB berfungsi normal.">
+       <div class="scenario-grid">
+          <button id="prof-guitar-ok" class="scenario-btn" data-v="5.0" data-a="0.48" data-cc="CC1: 5.1kΩ Rd (USB 5V)" data-dp="Smart Guitar DSP: Locked" data-state="ok" data-msg="SMART GUITAR PCB OK: D+/D- data lines active, DSP chip & USB audio functioning normally.">
             <span>Smart Guitar USB-C OK</span>
             <span class="sub">5.0V Bus • DSP &amp; MIDI OK</span>
           </button>
 
-          <button id="prof-amp-ok" class="scenario-btn" data-v="15.0" data-a="1.80" data-cc="Speaker Load: 8.1Ω Nominal" data-dp="Preamp Noise Floor: -78dB" data-state="ok" data-msg="AMP PCB HEALTHY: Bekalan kuasa stabil & gegelung speaker 8Ω berfungsi baik.">
+          <button id="prof-amp-ok" class="scenario-btn" data-v="15.0" data-a="1.80" data-cc="Speaker Load: 8.1Ω Nominal" data-dp="Preamp Noise Floor: -78dB" data-state="ok" data-msg="AMP PCB HEALTHY: Stable power supply & 8Ω speaker coil functioning properly.">
             <span>Guitar Amp PCB Healthy</span>
             <span class="sub">8Ω Coil OK • Low Noise</span>
           </button>
 
-          <button id="prof-amp-open" class="scenario-btn" data-v="5.0" data-a="0.04" data-cc="D+/D- or Coil: OPEN (∞ Ω)" data-dp="No Enum / Output Open" data-state="fault" data-msg="PCB FAULT [NO ENUMERATION / OPEN]: Kabel charge-only, talian D+/D- putus, atau gegelung speaker terbuka.">
+          <button id="prof-amp-open" class="scenario-btn" data-v="5.0" data-a="0.04" data-cc="D+/D- or Coil: OPEN (∞ Ω)" data-dp="No Enum / Output Open" data-state="fault" data-msg="PCB FAULT [NO ENUMERATION / OPEN]: Charge-only cable, broken D+/D- lines, or open speaker coil.">
             <span>Data Line / Coil Open</span>
             <span class="sub">0.04A Idle • No Data Link</span>
           </button>
 
-          <button id="prof-pcb-short" class="scenario-btn" data-v="1.2" data-a="4.90" data-cc="Power IC: Thermal/Short" data-dp="VBUS / Bias: Shorted" data-state="fault" data-msg="CRITICAL PCB SHORT: Litar pintas pada IC kuasa / kapasitor penapis atau talian VBUS-GND.">
+          <button id="prof-pcb-short" class="scenario-btn" data-v="1.2" data-a="4.90" data-cc="Power IC: Thermal/Short" data-dp="VBUS / Bias: Shorted" data-state="fault" data-msg="CRITICAL PCB SHORT: Short circuit on power IC / filter capacitor or VBUS-GND line.">
             <span>Blown IC / PCB Short</span>
             <span class="sub">Rail Collapse (1.2V / 4.9A)</span>
           </button>
