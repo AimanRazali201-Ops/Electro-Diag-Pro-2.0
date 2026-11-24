@@ -616,7 +616,38 @@
           });
         }
       }
+// 2B. Real LCD / UI Controller & Boot-Mode Check (Over Type-C USB/MIDI)
+   if (realState.connected) {
+     const lowName = realState.deviceName.toLowerCase();
+     const isBootloaderMode =
+       lowName.includes("rockchip") ||
+       lowName.includes("loader") ||
+       lowName.includes("dfu") ||
+       lowName.includes("2207:");
 
+     if (isBootloaderMode) {
+       rows.push({
+         tag: "[LCD / UI MAINBOARD]",
+         detail: "ERR-601 • Bootloader / Recovery Mode Detected — LCD & Main Firmware Not Booted",
+         status: "ERROR",
+         cls: "pcb-error"
+       });
+     } else if (realState.uiResponsive) {
+       rows.push({
+         tag: "[LCD / UI TOUCH CONTROLLER]",
+         detail: `UI-00 • Touch/Knob Control Active (${realState.midiEventCount} real MIDI/UI packet(s) received)`,
+         status: "OK",
+         cls: "pcb-ok"
+       });
+     } else {
+       rows.push({
+         tag: "[LCD / UI TOUCH CONTROLLER]",
+         detail: "UI-WAIT • Tap Guitar Screen/Knob to Verify Touch & Display Controller Link (No Fake Auto-Pass)",
+         status: "IN ISSUE",
+         cls: "pcb-issue"
+       });
+     }
+   }
       // 3. Real Electrical Rail & Coil Check (ONLY if physical WebSerial Probe is connected)
       if (realState.probeConnected && realState.vbus !== null) {
         if (realState.vbus < 3.0 || (realState.curr !== null && realState.curr > 4.5)) {
@@ -769,6 +800,13 @@
           midi.inputs.forEach(inp => {
             if (inp.state === "connected") {
               found.push({ type: "MIDI IN", name: `${inp.manufacturer || "USB"} ${inp.name}` });
+              inp.onmidimessage = (msg) => {
+             realState.uiResponsive = true;
+             realState.midiEventCount++;
+             realState.lastMidiMsg = Array.from(msg.data).map(b => b.toString(16).padStart(2, "0")).join(" ");
+             log(`Real UI/MIDI signal from guitar LCD/controls: [${realState.lastMidiMsg}]`);
+             renderDiagnosis();
+           };
             }
           });
           midi.outputs.forEach(out => {
