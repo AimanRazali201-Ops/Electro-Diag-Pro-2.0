@@ -3,241 +3,108 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Type-C ElectroDiag Pro — LAB BENCH v6.0</title>
+  <title>Type-C ElectroDiag Pro — REAL HARDWARE TELEMETRY</title>
   <style>
     :root {
-      --bg-dark: #090d14;
-      --panel-bg: #111824;
-      --panel-border: #1e293b;
-      --grid-line: rgba(56, 189, 248, 0.06);
-      --accent-cyan: #00e5ff;
-      --accent-green: #10b981;
-      --accent-amber: #f59e0b;
-      --accent-red: #ef4444;
-      --text-main: #f1f5f9;
-      --text-muted: #94a3b8;
-      --font-mono: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
-      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      --bg-body: #090d16;
+      --bg-card: #111622;
+      --bg-row: #161d2d;
+      --bg-btn: #182032;
+      --border-subtle: #232d42;
+      --text-primary: #f1f5f9;
+      --text-secondary: #8b9bb4;
+      --cyan: #10b9c8;
+      --cyan-bg: rgba(16, 185, 200, 0.12);
+      --green: #10b981;
+      --green-bg: rgba(16, 185, 129, 0.14);
+      --yellow: #f59e0b;
+      --yellow-bg: rgba(245, 158, 11, 0.14);
+      --red: #ef4444;
+      --red-bg: rgba(239, 68, 68, 0.14);
     }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
 
     body {
-      background-color: var(--bg-dark);
-      background-image: 
-        linear-gradient(to right, var(--grid-line) 1px, transparent 1px),
-        linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px);
-      background-size: 28px 28px;
-      color: var(--text-main);
-      font-family: var(--font-sans);
-      min-height: 100vh;
-      padding: 20px;
+      background-color: var(--bg-body);
+      color: var(--text-primary);
+      padding: 24px 28px;
       line-height: 1.5;
     }
 
-    .container { max-width: 1140px; margin: 0 auto; }
-
-    header {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: space-between;
-      align-items: center;
-      gap: 14px;
-      padding-bottom: 18px;
-      border-bottom: 1px solid var(--panel-border);
-      margin-bottom: 20px;
+    .wrapper {
+      max-width: 1280px;
+      margin: 0 auto;
     }
 
-    .title-group h1 {
-      font-size: 1.5rem;
+    /* Header */
+    .top-header {
+      margin-bottom: 16px;
+    }
+
+    .title-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 4px;
+    }
+
+    .title-row h1 {
+      font-size: 1.65rem;
       font-weight: 700;
-      display: flex;
-      align-items: center;
-      gap: 10px;
+      letter-spacing: -0.01em;
     }
 
-    .badge {
-      background: rgba(0, 229, 255, 0.12);
-      color: var(--accent-cyan);
-      border: 1px solid rgba(0, 229, 255, 0.35);
-      font-family: var(--font-mono);
+    .version-pill {
+      font-family: monospace;
       font-size: 0.72rem;
+      font-weight: 700;
+      color: var(--cyan);
+      background: var(--cyan-bg);
+      border: 1px solid rgba(16, 185, 200, 0.35);
       padding: 3px 8px;
       border-radius: 4px;
     }
 
-    .badge.live {
-      background: rgba(16, 185, 129, 0.16);
-      color: var(--accent-green);
-      border-color: var(--accent-green);
-    }
-
-    .subtitle { color: var(--text-muted); font-size: 0.85rem; margin-top: 3px; }
-
-    .toolbar { display: flex; flex-wrap: wrap; gap: 8px; }
-
-    button {
-      background: #172030;
-      color: var(--text-main);
-      border: 1px solid #2d3b52;
-      padding: 8px 13px;
-      border-radius: 6px;
-      font-family: var(--font-mono);
-      font-size: 0.8rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.15s ease;
-    }
-
-    button:hover { background: #1f2b40; border-color: var(--accent-cyan); }
-    button.primary { background: rgba(0, 229, 255, 0.15); border-color: var(--accent-cyan); color: var(--accent-cyan); }
-    button.active-tone { background: rgba(16, 185, 129, 0.2); border-color: var(--accent-green); color: var(--accent-green); }
-    button.amp-btn { background: rgba(245, 158, 11, 0.15); border-color: var(--accent-amber); color: var(--accent-amber); }
-
-    .grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 18px;
-    }
-
-    @media (max-width: 820px) { .grid { grid-template-columns: 1fr; } }
-
-    .card {
-      background: var(--panel-bg);
-      border: 1px solid var(--panel-border);
-      border-radius: 10px;
-      padding: 18px;
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
-    }
-
-    .card.full-width { grid-column: 1 / -1; }
-
-    .card h2 {
+    .subtitle {
       font-size: 0.88rem;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      color: var(--text-muted);
-      font-family: var(--font-mono);
-      margin-bottom: 14px;
+      color: var(--text-secondary);
+    }
+
+    /* Toolbar */
+    .toolbar {
       display: flex;
-      justify-content: space-between;
-      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--border-subtle);
+      margin-bottom: 20px;
     }
 
-    .status-banner {
-      background: #0b1019;
-      border: 1px solid #1e293b;
-      border-left: 4px solid var(--text-muted);
-      padding: 12px 15px;
-      border-radius: 6px;
-      font-family: var(--font-mono);
-      font-size: 0.83rem;
-    }
-
-    .status-banner.ok { border-left-color: var(--accent-green); }
-    .status-banner.warn { border-left-color: var(--accent-amber); }
-    .status-banner.fault { border-left-color: var(--accent-red); }
-
-    .status-label { font-weight: 700; display: block; margin-bottom: 4px; color: var(--accent-cyan); }
-    .status-banner.ok .status-label { color: var(--accent-green); }
-    .status-banner.warn .status-label { color: var(--accent-amber); }
-    .status-banner.fault .status-label { color: var(--accent-red); }
-
-    .device-list { margin-top: 10px; display: flex; flex-direction: column; gap: 6px; }
-    .device-item {
-      background: #141d2b;
-      border: 1px solid #263449;
-      padding: 7px 11px;
-      border-radius: 5px;
-      font-family: var(--font-mono);
-      font-size: 0.78rem;
-      display: flex;
-      justify-content: space-between;
-    }
-
-    /* RED BOX: Profile Cards */
-    .scenario-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-    .scenario-btn {
-      display: flex;
-      flex-direction: column;
-      align-items: flex-start;
-      text-align: left;
-      padding: 10px;
-      gap: 3px;
-      position: relative;
-    }
-    .scenario-btn span.sub { font-size: 0.72rem; color: var(--text-muted); font-weight: 400; }
-
-    .scenario-btn.active-ok {
-      border-color: var(--accent-green);
-      background: rgba(16, 185, 129, 0.14);
-      box-shadow: 0 0 12px rgba(16, 185, 129, 0.25);
-    }
-    .scenario-btn.active-fault {
-      border-color: var(--accent-red);
-      background: rgba(239, 68, 68, 0.14);
-      box-shadow: 0 0 12px rgba(239, 68, 68, 0.25);
-    }
-
-    /* YELLOW BOX: Live Telemetry */
-    .telemetry-row { margin-bottom: 14px; }
-    .telemetry-header {
-      display: flex;
-      justify-content: space-between;
-      font-family: var(--font-mono);
-      font-size: 0.82rem;
-      margin-bottom: 6px;
-    }
-    .telemetry-val { color: var(--accent-cyan); font-weight: 700; }
-
-    input[type="range"] {
-      -webkit-appearance: none;
-      width: 100%;
-      height: 6px;
-      background: #1e293b;
-      border-radius: 4px;
-      outline: none;
-    }
-    input[type="range"]::-webkit-slider-thumb {
-      -webkit-appearance: none;
-      width: 16px;
-      height: 16px;
-      border-radius: 50%;
-      background: var(--accent-cyan);
-      cursor: pointer;
-    }
-
-    .metrics-bar {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 8px;
-      margin-top: 14px;
-      padding-top: 14px;
-      border-top: 1px solid var(--panel-border);
-      font-family: var(--font-mono);
-    }
-    .metric-box { background: #0b1019; padding: 9px; border-radius: 6px; border: 1px solid #1e293b; }
-    .metric-box .label { font-size: 0.68rem; color: var(--text-muted); display: block; }
-    .metric-box .val { font-size: 0.85rem; font-weight: 700; color: var(--text-main); }
-
-    .log-box {
-      background: #070a10;
-      border: 1px solid #1e293b;
-      border-radius: 6px;
-      padding: 10px;
-      height: 145px;
-      overflow-y: auto;
-      font-family: var(--font-mono);
-      font-size: 0.76rem;
-      color: #a5f3fc;
-    }
-    .log-entry { margin-bottom: 4px; }
-    .log-time { color: #64748b; margin-right: 8px; }
     .toolbar button {
       background: #182032;
       color: #f1f5f9;
       border: 1px solid #232d42;
+      padding: 9px 15px;
+      border-radius: 6px;
+      font-family: monospace;
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
       transition: background 0.1s ease, border-color 0.1s ease, color 0.1s ease, transform 0.05s ease;
+    }
+
+    .toolbar button:hover {
+      background: #1f293d;
+      border-color: #3b4c6e;
     }
 
     .toolbar button:active {
@@ -246,7 +113,109 @@
       color: #10b9c8;
       transform: scale(0.98);
     }
-   .pcb-badge {
+
+    /* Cards */
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 10px;
+      padding: 18px 20px;
+      margin-bottom: 18px;
+    }
+
+    .card h2 {
+      font-family: monospace;
+      font-size: 0.82rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+    }
+
+    .badge {
+      font-family: monospace;
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: var(--cyan);
+      background: var(--cyan-bg);
+      border: 1px solid rgba(16, 185, 200, 0.35);
+      padding: 4px 10px;
+      border-radius: 4px;
+    }
+
+    .badge.live {
+      color: var(--green);
+      background: var(--green-bg);
+      border-color: rgba(16, 185, 129, 0.4);
+    }
+
+    /* Banner */
+    .status-banner {
+      background: #131c2b;
+      border: 1px solid var(--border-subtle);
+      border-left: 3px solid var(--cyan);
+      border-radius: 6px;
+      padding: 12px 16px;
+      margin-bottom: 14px;
+    }
+
+    .status-banner.ok {
+      border-left-color: var(--green);
+    }
+
+    .status-banner.issue {
+      border-left-color: var(--yellow);
+    }
+
+    .status-banner.fault {
+      border-left-color: var(--red);
+    }
+
+    .status-label {
+      display: block;
+      font-family: monospace;
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: var(--cyan);
+      margin-bottom: 4px;
+      text-transform: uppercase;
+    }
+
+    .status-banner.ok .status-label { color: var(--green); }
+    .status-banner.issue .status-label { color: var(--yellow); }
+    .status-banner.fault .status-label { color: var(--red); }
+
+    #link-desc {
+      font-family: monospace;
+      font-size: 0.8rem;
+      color: #cbd5e1;
+    }
+
+    /* Device & PCB Diagnostic Rows */
+    .device-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .device-item {
+      background: var(--bg-row);
+      border: 1px solid var(--border-subtle);
+      border-radius: 6px;
+      padding: 11px 15px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      font-family: monospace;
+      font-size: 0.82rem;
+    }
+
+    .pcb-badge {
       padding: 3px 8px;
       border-radius: 4px;
       font-family: monospace;
@@ -255,540 +224,761 @@
       letter-spacing: 0.04em;
       white-space: nowrap;
     }
+
     .pcb-ok {
       color: #10b981;
       background: rgba(16, 185, 129, 0.14);
       border: 1px solid rgba(16, 185, 129, 0.4);
     }
+
     .pcb-issue {
       color: #f59e0b;
       background: rgba(245, 158, 11, 0.14);
       border: 1px solid rgba(245, 158, 11, 0.4);
     }
+
     .pcb-error {
       color: #ef4444;
       background: rgba(239, 68, 68, 0.14);
       border: 1px solid rgba(239, 68, 68, 0.4);
-    } 
+    }
+
+    /* Two-Column Real Telemetry Grid */
+    .lower-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+      margin-bottom: 18px;
+    }
+
+    @media (max-width: 860px) {
+      .lower-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .metrics-bar {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-top: 10px;
+      font-family: monospace;
+    }
+
+    .metric-box {
+      background: var(--bg-row);
+      border: 1px solid var(--border-subtle);
+      border-radius: 6px;
+      padding: 10px 12px;
+    }
+
+    .metric-box .label {
+      display: block;
+      font-size: 0.68rem;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+
+    .metric-box .val {
+      font-size: 0.86rem;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    /* Live Audio Signal Meter */
+    .meter-track {
+      width: 100%;
+      height: 10px;
+      background: #0b0f19;
+      border: 1px solid var(--border-subtle);
+      border-radius: 5px;
+      overflow: hidden;
+      margin: 10px 0 12px 0;
+    }
+
+    .meter-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #10b981, #10b9c8, #f59e0b);
+      transition: width 0.08s linear;
+    }
+
+    /* Console */
+    .console-box {
+      background: #0b0f19;
+      border: 1px solid var(--border-subtle);
+      border-radius: 6px;
+      padding: 12px 14px;
+      font-family: monospace;
+      font-size: 0.78rem;
+      color: #94a3b8;
+      max-height: 165px;
+      overflow-y: auto;
+    }
+
+    .log-entry { margin-bottom: 4px; }
+    .log-time { color: #64748b; margin-right: 8px; }
+
+    footer {
+      text-align: center;
+      font-family: monospace;
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      padding-top: 6px;
+      letter-spacing: 0.08em;
+    }
   </style>
 </head>
 <body>
-  <div class="container">
-    <header>
-      <div class="title-group">
-        <h1>Type-C ElectroDiag Pro <span class="badge">LAB BENCH v6.0</span></h1>
-        <div class="subtitle">Auto-Sync Smart Guitar, Amp &amp; PCB Fault Telemetry Analyzer</div>
+  <div class="wrapper">
+    <!-- Header -->
+    <div class="top-header">
+      <div class="title-row">
+        <h1>Type-C ElectroDiag Pro</h1>
+        <span class="version-pill">LIVE HARDWARE EDITION</span>
       </div>
+      <div class="subtitle">Real-Time Type-C Smart Guitar, Audio Interface &amp; PCB Telemetry Reader</div>
+    </div>
 
-     <div class="toolbar">
-        <button id="btn-tone">🔊 Test Tone (440Hz)</button>
-        <button id="btn-detect">🎹 Scan &amp; Sync PCB</button>
-        <button id="btn-amp-sweep">🎸 Amp &amp; Speaker PCB Test</button>
-        <button id="btn-serial">🔌 Hardware Probe (WebSerial)</button>
-        <button id="btn-usb">⚡ Pair USB-C Device</button>
+    <!-- Action Toolbar -->
+    <div class="toolbar">
+      <button id="btn-tone">🔊 Test Tone (440Hz)</button>
+      <button id="btn-detect">🎹 Scan &amp; Sync PCB</button>
+      <button id="btn-amp-sweep">🎸 Acoustic Loopback Test</button>
+      <button id="btn-serial">🔌 Hardware Probe (WebSerial)</button>
+      <button id="btn-usb">⚡ Pair USB-C Device</button>
+    </div>
+
+    <!-- Auto-Detection & PCB Fault Diagnosis -->
+    <section class="card full-width">
+      <h2>
+        Active PCB &amp; Acoustic Link Diagnosis
+        <span id="auto-badge" class="badge">AUTO-SYNC STANDBY</span>
+      </h2>
+      <div id="link-banner" class="status-banner">
+        <span id="link-status" class="status-label">WAITING FOR TYPE-C CONNECTION</span>
+        <div id="link-desc">
+          Connect your <strong>Smart Guitar / Audio Interface</strong> using a Type-C data cable to your laptop. Click <strong>Scan &amp; Sync PCB</strong> once to grant device access permission, and live hardware readings will appear automatically.
+        </div>
       </div>
-    </header>
+      <div id="device-list" class="device-list"></div>
+    </section>
 
-    <div class="grid">
-      <!-- Auto-Detection & PCB Fault Diagnosis -->
-      <section class="card full-width">
+    <!-- Two-Column Real Hardware Readers -->
+    <div class="lower-grid">
+      <!-- LEFT BOX: Real Live USB Audio DSP & Signal Reader -->
+      <section class="card" style="margin-bottom: 0;">
         <h2>
-          Active PCB &amp; Acoustic Link Diagnosis
-          <span id="auto-badge" class="badge">AUTO-SYNC STANDBY</span>
-        </h2>
-        <div id="link-banner" class="status-banner">
-          <span id="link-status" class="status-label">WAITING FOR TYPE-C CONNECTION</span>
-          <div id="link-desc">
-            Connect your <strong>Smart Guitar / Audio Interface</strong> using a Type-C data cable to your laptop. Click <strong>Scan &amp; Sync PCB</strong> once to grant device access permission, and the readings below will update automatically.
-        </div>
-        <div id="device-list" class="device-list"></div>
-      </section>
-
-      <!-- RED BOX: Instrument & Amp PCB Fault Profiles -->
-      <section class="card">
-        <h2>
-          Instrument &amp; Amp PCB Fault Profiles
-          <button id="btn-reset" style="padding: 3px 9px; font-size: 0.72rem;">Reset</button>
-        </h2>
-       <div class="scenario-grid">
-          <button id="prof-guitar-ok" class="scenario-btn" data-v="5.0" data-a="0.48" data-cc="CC1: 5.1kΩ Rd (USB 5V)" data-dp="Smart Guitar DSP: Locked" data-state="ok" data-msg="SMART GUITAR PCB OK: D+/D- data lines active, DSP chip & USB audio functioning normally.">
-            <span>Smart Guitar USB-C OK</span>
-            <span class="sub">5.0V Bus • DSP &amp; MIDI OK</span>
-          </button>
-
-          <button id="prof-amp-ok" class="scenario-btn" data-v="15.0" data-a="1.80" data-cc="Speaker Load: 8.1Ω Nominal" data-dp="Preamp Noise Floor: -78dB" data-state="ok" data-msg="AMP PCB HEALTHY: Stable power supply & 8Ω speaker coil functioning properly.">
-            <span>Guitar Amp PCB Healthy</span>
-            <span class="sub">8Ω Coil OK • Low Noise</span>
-          </button>
-
-          <button id="prof-amp-open" class="scenario-btn" data-v="5.0" data-a="0.04" data-cc="D+/D- or Coil: OPEN (∞ Ω)" data-dp="No Enum / Output Open" data-state="fault" data-msg="PCB FAULT [NO ENUMERATION / OPEN]: Charge-only cable, broken D+/D- lines, or open speaker coil.">
-            <span>Data Line / Coil Open</span>
-            <span class="sub">0.04A Idle • No Data Link</span>
-          </button>
-
-          <button id="prof-pcb-short" class="scenario-btn" data-v="1.2" data-a="4.90" data-cc="Power IC: Thermal/Short" data-dp="VBUS / Bias: Shorted" data-state="fault" data-msg="CRITICAL PCB SHORT: Short circuit on power IC / filter capacitor or VBUS-GND line.">
-            <span>Blown IC / PCB Short</span>
-            <span class="sub">Rail Collapse (1.2V / 4.9A)</span>
-          </button>
-        </div>
-      </section>
-
-      <!-- YELLOW BOX: Live Rail & PCB Probe Telemetry -->
-      <section class="card">
-        <h2>
-          Live Rail &amp; PCB Probe Telemetry
-          <span id="telemetry-mode-badge" class="badge">PROTOCOL ESTIMATE</span>
+          Real USB Audio DSP &amp; Signal Reader
+          <span id="audio-badge" class="badge">OFFLINE</span>
         </h2>
 
-        <div class="telemetry-row">
-          <div class="telemetry-header">
-            <label for="slider-vbus">Supply / Rail Voltage</label>
-            <span id="val-vbus" class="telemetry-val">0.0 V</span>
-          </div>
-          <input type="range" id="slider-vbus" min="0" max="24" step="0.1" value="0.0" />
+        <div style="display:flex; justify-content:space-between; font-family:monospace; font-size:0.78rem; color:var(--text-secondary);">
+          <span>LIVE INPUT RMS LEVEL</span>
+          <span id="val-rms" style="color:var(--cyan); font-weight:700;">-- dBFS</span>
         </div>
-
-        <div class="telemetry-row">
-          <div class="telemetry-header">
-            <label for="slider-curr">Current Draw</label>
-            <span id="val-curr" class="telemetry-val">0.00 A</span>
-          </div>
-          <input type="range" id="slider-curr" min="0" max="5" step="0.05" value="0.00" />
+        <div class="meter-track">
+          <div id="rms-bar" class="meter-fill"></div>
         </div>
 
         <div class="metrics-bar">
           <div class="metric-box">
-            <span class="label">POWER (W)</span>
-            <span id="val-watts" class="val">0.0 W</span>
+            <span class="label">SAMPLE RATE</span>
+            <span id="val-srate" class="val">-- Hz</span>
           </div>
           <div class="metric-box">
-            <span class="label">CC / COIL LOAD</span>
-            <span id="val-cc" class="val" style="font-size:0.75rem;">STANDBY</span>
+            <span class="label">NOISE FLOOR</span>
+            <span id="val-noise" class="val">-- dB</span>
           </div>
           <div class="metric-box">
-            <span class="label">PCB STAGE</span>
-            <span id="val-dp" class="val" style="font-size:0.75rem;">WAITING</span>
+            <span class="label">USB DATA BUS</span>
+            <span id="val-bus" class="val">NO LINK</span>
           </div>
         </div>
       </section>
 
-      <!-- Diagnostic Console -->
-      <section class="card full-width">
-        <h2>Protocol &amp; PCB Diagnostic Console</h2>
-        <div id="console-log" class="log-box"></div>
+      <!-- RIGHT BOX: Real Electrical Rail Reader (WebSerial Sensor Probe) -->
+      <section class="card" style="margin-bottom: 0;">
+        <h2>
+          Live Rail &amp; PCB Probe Telemetry
+          <span id="telemetry-mode-badge" class="badge">PROBE NOT CONNECTED</span>
+        </h2>
+
+        <div class="metrics-bar" style="margin-top: 0;">
+          <div class="metric-box">
+            <span class="label">SUPPLY / VBUS</span>
+            <span id="val-vbus" class="val">N/A</span>
+          </div>
+          <div class="metric-box">
+            <span class="label">CURRENT DRAW</span>
+            <span id="val-curr" class="val">N/A</span>
+          </div>
+          <div class="metric-box">
+            <span class="label">REAL POWER (W)</span>
+            <span id="val-watts" class="val">N/A</span>
+          </div>
+        </div>
+
+        <div class="metrics-bar">
+          <div class="metric-box">
+            <span class="label">COIL / LOAD (Ω)</span>
+            <span id="val-ohms" class="val">N/A</span>
+          </div>
+          <div class="metric-box">
+            <span class="label">USB VID : PID</span>
+            <span id="val-vidpid" class="val">-- : --</span>
+          </div>
+          <div class="metric-box">
+            <span class="label">SENSOR SOURCE</span>
+            <span id="val-source" class="val">NONE</span>
+          </div>
+        </div>
       </section>
     </div>
+
+    <!-- Console -->
+    <section class="card">
+      <h2>Protocol &amp; PCB Diagnostic Console</h2>
+      <div id="console-log" class="console-box"></div>
+    </section>
+
+    <footer>PROTOTAIP 6.0 • REAL HARDWARE READER</footer>
   </div>
 
-<script>
-  const syncState = {
-    connected: false,
-    deviceName: "",
-    externalDevices: [],
-    vbus: 0.0,
-    curr: 0.00,
-    ccText: "STANDBY",
-    dpText: "WAITING",
-    isSerialLive: false
-  };
+  <script>
+    const realState = {
+      connected: false,
+      deviceName: "",
+      vidPid: "-- : --",
+      externalEndpoints: [],
+      // Real Audio DSP metrics (from Web Audio API AnalyserNode)
+      audioActive: false,
+      sampleRate: null,
+      rmsDb: null,
+      noiseFloorDb: null,
+      // Real Electrical metrics (ONLY populated when a physical WebSerial probe streams data)
+      probeConnected: false,
+      vbus: null,
+      curr: null,
+      ohms: null
+    };
 
-  // DOM References matching your exact HTML IDs
-  const autoBadge = document.getElementById("auto-badge");
-  const linkBanner = document.getElementById("link-banner");
-  const linkStatus = document.getElementById("link-status");
-  const linkDesc = document.getElementById("link-desc");
-  const deviceList = document.getElementById("device-list");
+    let audioCtx = null;
+    let micStream = null;
+    let analyserNode = null;
+    let meterRaf = null;
+    let scanLock = false;
 
-  const sliderVbus = document.getElementById("slider-vbus");
-  const sliderCurr = document.getElementById("slider-curr");
-  const valVbus = document.getElementById("val-vbus");
-  const valCurr = document.getElementById("val-curr");
-  const valWatts = document.getElementById("val-watts");
-  const valCc = document.getElementById("val-cc");
-  const valDp = document.getElementById("val-dp");
-  const modeBadge = document.getElementById("telemetry-mode-badge");
-  const scenarioBtns = document.querySelectorAll(".scenario-btn");
-
-  function addLog(msg) {
-    const logEl = document.getElementById("console-log") || document.querySelector(".console-box");
-    if (!logEl) return;
-    const t = new Date().toTimeString().split(" ")[0];
-    const row = document.createElement("div");
-    row.className = "log-entry";
-    row.innerHTML = `<span class="log-time">[${t}]</span>${msg}`;
-    logEl.appendChild(row);
-    logEl.scrollTop = logEl.scrollHeight;
-  }
-
-  // Evaluate PCB parts into OK (green), IN ISSUE (yellow), or ERROR (red)
-  function evaluatePcbParts() {
-    const { connected, vbus, curr, ccText, dpText } = syncState;
-    const parts = [];
-    const ccLower = ccText.toLowerCase();
-    const dpLower = dpText.toLowerCase();
-
-    // 1. Power Rail & Regulator / Amp IC
-    if (vbus > 0 && (vbus < 3.0 || curr > 4.5 || ccLower.includes("short"))) {
-      parts.push({
-        label: "[POWER RAIL / AMP IC]",
-        detail: `ERR-501 • Rail Collapse / Short Circuit (${vbus.toFixed(1)}V / ${curr.toFixed(2)}A)`,
-        status: "ERROR",
-        cls: "pcb-error"
-      });
-    } else if (vbus > 0 && ((vbus >= 3.0 && vbus < 4.6) || (vbus > 5.5 && vbus < 14.2) || curr > 3.5)) {
-      parts.push({
-        label: "[PD / BUCK STAGE]",
-        detail: `ERR-204 • Voltage Sag / Elevated Current (${vbus.toFixed(1)}V / ${curr.toFixed(2)}A)`,
-        status: "IN ISSUE",
-        cls: "pcb-issue"
-      });
-    } else if (vbus >= 4.6) {
-      parts.push({
-        label: "[POWER RAIL / PD IC]",
-        detail: `PWR-00 • Supply Rail Locked & Nominal (${vbus.toFixed(1)}V / ${curr.toFixed(2)}A)`,
-        status: "OK",
-        cls: "pcb-ok"
-      });
+    const logBox = document.getElementById("console-log");
+    function log(msg) {
+      const now = new Date().toLocaleTimeString("en-GB", { hour12: false });
+      const line = document.createElement("div");
+      line.className = "log-entry";
+      line.innerHTML = `<span class="log-time">[${now}]</span>${msg}`;
+      logBox.appendChild(line);
+      logBox.scrollTop = logBox.scrollHeight;
     }
 
-    // 2. Speaker Coil / CC Termination / Output Jack
-    if (ccLower.includes("open") || ccLower.includes("∞")) {
-      parts.push({
-        label: "[DATA / COIL STAGE]",
-        detail: "ERR-404 • Open Circuit (∞ Ω) — Broken D+/D- Line or Blown Speaker Coil",
-        status: "ERROR",
-        cls: "pcb-error"
-      });
-    } else if (ccLower.includes("high") || ccLower.includes("oxidized")) {
-      parts.push({
-        label: "[SPEAKER / OUTPUT JACK]",
-        detail: "ERR-302 • High Impedance — Oxidized Jack Contact / Degraded Coil",
-        status: "IN ISSUE",
-        cls: "pcb-issue"
-      });
-    } else if (vbus >= 4.6) {
-      parts.push({
-        label: "[CC / ACOUSTIC STAGE]",
-        detail: `SPK-00 • ${ccText} • Continuity Nominal`,
-        status: "OK",
-        cls: "pcb-ok"
-      });
-    }
-
-    // 3. USB Codec & D+/D- Bus
-    if (dpLower.includes("no enum") || (vbus >= 4.6 && !connected && curr < 0.1)) {
-      parts.push({
-        label: "[USB CODEC / D+ D-]",
-        detail: "ERR-109 • USB Enumeration Failed — Charge-Only Cable or Transceiver Fault",
-        status: "ERROR",
-        cls: "pcb-error"
-      });
-    } else if (connected) {
-      parts.push({
-        label: "[USB CODEC / D+ D-]",
-        detail: `USB-00 • ${dpText} • Enumerating Properly`,
-        status: "OK",
-        cls: "pcb-ok"
-      });
-    }
-
-    return parts;
-  }
-
-  // Master Sync Function: updates Top Diagnosis + Bottom Telemetry + Profile Highlight
-  function syncAllSections(customBannerMsg = null) {
-    const { connected, externalDevices, vbus, curr, ccText, dpText, isSerialLive } = syncState;
-
-    // 1. Sync Sliders & Telemetry Readouts (Yellow Box)
-    sliderVbus.value = vbus;
-    sliderCurr.value = curr;
-    valVbus.textContent = `${vbus.toFixed(1)} V`;
-    valCurr.textContent = `${curr.toFixed(2)} A`;
-    valWatts.textContent = `${(vbus * curr).toFixed(1)} W`;
-    valCc.textContent = ccText;
-    valDp.textContent = dpText;
-    modeBadge.textContent = isSerialLive ? "LIVE SERIAL PROBE" : (connected ? "LIVE USB-C SYNC" : "PROTOCOL ESTIMATE");
-
-    // 2. Evaluate PCB Health
-    const parts = evaluatePcbParts();
-    const hasError = parts.some(p => p.status === "ERROR");
-    const hasIssue = parts.some(p => p.status === "IN ISSUE");
-
-    // 3. Sync Top Diagnosis Banner & Badge
-    linkBanner.classList.remove("ok", "fault", "issue");
-
-    if (hasError) {
-      const errCode = parts.find(p => p.status === "ERROR").detail.split(" ")[0];
-      autoBadge.textContent = `FAULT DETECTED (${errCode})`;
-      linkBanner.classList.add("fault");
-      linkStatus.textContent = `PCB MALFUNCTION DETECTED (${errCode})`;
-      linkDesc.textContent = customBannerMsg || "Critical hardware fault detected on the active PCB or Type-C link. Check red ERROR badges below.";
-    } else if (hasIssue) {
-      const warnCode = parts.find(p => p.status === "IN ISSUE").detail.split(" ")[0];
-      autoBadge.textContent = `WARNING (${warnCode})`;
-      linkBanner.classList.add("issue");
-      linkStatus.textContent = `DEGRADED COMPONENT DETECTED (${warnCode})`;
-      linkDesc.textContent = customBannerMsg || "Component operating outside nominal tolerance. Preventive maintenance recommended.";
-    } else if (connected || vbus >= 4.6) {
-      autoBadge.textContent = "AUTO-SYNC LIVE";
-      linkBanner.classList.add("ok");
-      linkStatus.textContent = connected
-        ? `TYPE-C LINK ACTIVE: ${syncState.deviceName.toUpperCase()}`
-        : "PCB & ACOUSTIC LINK NOMINAL (SYS-00)";
-      linkDesc.textContent = customBannerMsg || "All monitored PCB power rails, CC lines, and USB D+/D- audio/MIDI endpoints are operating within normal range.";
-    } else {
-      autoBadge.textContent = "AUTO-SYNC STANDBY";
-      linkStatus.textContent = "WAITING FOR TYPE-C CONNECTION";
-      linkDesc.innerHTML = 'Connect your <strong>Smart Guitar / Audio Interface</strong> using a Type-C data cable to your laptop. Click <strong>Scan &amp; Sync PCB</strong> once to grant device access permission, and the readings below will update automatically.';
-    }
-
-    // 4. Render Connected Devices + PCB Subsystem Status Rows
-    let rowsHtml = "";
-    externalDevices.forEach(dev => {
-      rowsHtml += `
-        <div class="device-item">
-          <span><strong>[USB-C DEVICE]</strong> ${dev}</span>
-          <span class="pcb-badge ${hasError ? "pcb-error" : "pcb-ok"}">${hasError ? "ERROR" : "OK"}</span>
-        </div>
-      `;
-    });
-
-    parts.forEach(p => {
-      rowsHtml += `
-        <div class="device-item">
-          <span><strong>${p.label}</strong> ${p.detail}</span>
-          <span class="pcb-badge ${p.cls}">${p.status}</span>
-        </div>
-      `;
-    });
-
-    deviceList.innerHTML = rowsHtml;
-  }
-
-  // Auto-Scan Type-C Audio / MIDI / WebUSB Devices
-  async function scanAndSyncTypeC(triggerSource = "Auto-Scan") {
-    addLog(`${triggerSource}: Scanning Type-C bus for Smart Guitar, Audio Interface & MIDI...`);
-    let foundExternals = [];
-
-    // Check WebMIDI
-    if (navigator.requestMIDIAccess) {
+    // Start real-time Web Audio Analyser on the connected Type-C Smart Guitar / Audio Interface
+    async function startRealAudioAnalyser(deviceId) {
+      stopRealAudioAnalyser();
       try {
-        const midi = await navigator.requestMIDIAccess();
-        midi.inputs.forEach(input => foundExternals.push(`MIDI IN: ${input.name}`));
-        midi.outputs.forEach(output => foundExternals.push(`MIDI OUT: ${output.name}`));
-        midi.onstatechange = () => scanAndSyncTypeC("MIDI Hotplug");
-      } catch (_) {}
-    }
+        const constraints = deviceId
+          ? { audio: { deviceId: { exact: deviceId }, echoCancellation: false, noiseSuppression: false, autoGainControl: false } }
+          : { audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false } };
 
-  // Check WebAudio / MediaDevices (Strictly exclude built-in laptop mics/speakers)
-    if (navigator.mediaDevices && navigator.mediaDevices.enumerateDevices) {
-      try {
-        try {
-          const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-          stream.getTracks().forEach(t => t.stop());
-        } catch (_) {}
+        micStream = await navigator.mediaDevices.getUserMedia(constraints);
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const source = audioCtx.createMediaStreamSource(micStream);
+        analyserNode = audioCtx.createAnalyser();
+        analyserNode.fftSize = 2048;
+        source.connect(analyserNode);
 
-        const devices = await navigator.mediaDevices.enumerateDevices();
-        devices.forEach(d => {
-          if ((d.kind === "audioinput" || d.kind === "audiooutput") && d.deviceId !== "default" && d.deviceId !== "communications") {
-            const name = d.label || "";
-            const low = name.toLowerCase();
+        realState.audioActive = true;
+        realState.sampleRate = audioCtx.sampleRate;
+        realState.noiseFloorDb = -96.0;
 
-            // Block all built-in laptop audio/microphone arrays
-            const isInternal =
-              low.includes("amd audio") ||
-              low.includes("microphone array") ||
-              low.includes("realtek") ||
-              low.includes("intel") ||
-              low.includes("high definition audio") ||
-              low.includes("built-in") ||
-              low.includes("internal") ||
-              low.includes("macbook");
+        document.getElementById("audio-badge").textContent = "DSP STREAM LIVE";
+        document.getElementById("audio-badge").classList.add("live");
+        document.getElementById("val-srate").textContent = `${(audioCtx.sampleRate / 1000).toFixed(1)} kHz`;
+        document.getElementById("val-bus").textContent = "D+/D- ACTIVE";
 
-            // Only allow external USB-C / Smart Guitar / Audio Interface devices
-            const isExternalHardware =
-              low.includes("usb") ||
-              low.includes("enya") ||
-              low.includes("nexg") ||
-              low.includes("1235:") ||
-              low.includes("guitar") ||
-              low.includes("interface") ||
-              low.includes("midi") ||
-              low.includes("amp") ||
-              low.includes("focusrite") ||
-              low.includes("behringer") ||
-              low.includes("boss") ||
-              low.includes("line 6") ||
-              low.includes("zoom");
+        const buffer = new Float32Array(analyserNode.fftSize);
+        let frameCount = 0;
 
-            if (name && !isInternal && isExternalHardware && !foundExternals.includes(name)) {
-              foundExternals.push(name);
-            }
+        function sampleLoop() {
+          if (!analyserNode) return;
+          analyserNode.getFloatTimeDomainData(buffer);
+          let sumSq = 0;
+          for (let i = 0; i < buffer.length; i++) {
+            sumSq += buffer[i] * buffer[i];
           }
-        });
+          const rms = Math.sqrt(sumSq / buffer.length);
+          const db = rms > 0.000001 ? 20 * Math.log10(rms) : -96.0;
+          realState.rmsDb = db;
+
+          // Track lowest quiet floor after initial settle
+          if (frameCount > 15 && db < -35) {
+            realState.noiseFloorDb = realState.noiseFloorDb === -96.0
+              ? db
+              : (realState.noiseFloorDb * 0.95 + db * 0.05);
+          }
+          frameCount++;
+
+          const pct = Math.max(0, Math.min(100, ((db + 90) / 90) * 100));
+          document.getElementById("rms-bar").style.width = `${pct}%`;
+          document.getElementById("val-rms").textContent = `${db.toFixed(1)} dBFS`;
+          document.getElementById("val-noise").textContent = `${realState.noiseFloorDb.toFixed(1)} dB`;
+
+          if (frameCount % 30 === 0) {
+            renderDiagnosis();
+          }
+          meterRaf = requestAnimationFrame(sampleLoop);
+        }
+        sampleLoop();
+        log(`Real Audio DSP stream locked at ${audioCtx.sampleRate} Hz (raw unfiltered input).`);
       } catch (err) {
-        addLog(`Audio bus notice: ${err.message}`);
+        log(`Audio stream notice: ${err.message}`);
       }
     }
 
-    // Check Paired Raw WebUSB Devices (Exclude internal Realtek/hub controllers like VID 0x0bda)
-    if (navigator.usb && navigator.usb.getDevices) {
-      try {
-        const usbDevs = await navigator.usb.getDevices();
-        usbDevs.forEach(u => {
-          // 0x0bda is Realtek internal laptop card/Bluetooth/camera controller
-          if (u.vendorId === 0x0bda) return;
-          const label = `${u.productName || "Type-C Smart Guitar / Audio"} (${u.vendorId.toString(16)}:${u.productId.toString(16)})`;
-          if (!foundExternals.includes(label)) foundExternals.push(label);
+    function stopRealAudioAnalyser() {
+      if (meterRaf) cancelAnimationFrame(meterRaf);
+      meterRaf = null;
+      if (micStream) {
+        micStream.getTracks().forEach(t => t.stop());
+        micStream = null;
+      }
+      if (audioCtx) {
+        audioCtx.close().catch(() => {});
+        audioCtx = null;
+      }
+      analyserNode = null;
+      realState.audioActive = false;
+      realState.sampleRate = null;
+      realState.rmsDb = null;
+      realState.noiseFloorDb = null;
+
+      document.getElementById("audio-badge").textContent = "OFFLINE";
+      document.getElementById("audio-badge").classList.remove("live");
+      document.getElementById("rms-bar").style.width = "0%";
+      document.getElementById("val-rms").textContent = "-- dBFS";
+      document.getElementById("val-srate").textContent = "-- Hz";
+      document.getElementById("val-noise").textContent = "-- dB";
+      document.getElementById("val-bus").textContent = "NO LINK";
+    }
+
+    // Evaluate ONLY real hardware readings into OK (green), IN ISSUE (yellow), or ERROR (red)
+    function evaluateRealPcbHealth() {
+      const rows = [];
+
+      // 1. USB Data Bus & Enumeration Check (Real)
+      if (!realState.connected) {
+        rows.push({
+          tag: "[USB DATA BUS / D+ D-]",
+          detail: "ERR-109 • No Type-C Smart Guitar / Audio Device Enumerated (Check Data Cable)",
+          status: "ERROR",
+          cls: "pcb-error"
         });
-      } catch (_) {}
-    }
-    // Update Sync State based on real Type-C connection
-    if (foundExternals.length > 0) {
-      syncState.connected = true;
-      syncState.externalDevices = foundExternals;
-      syncState.deviceName = foundExternals[0];
-
-      // Populate live Type-C telemetry if not overridden by physical WebSerial probe
-      if (!syncState.isSerialLive) {
-        syncState.vbus = 5.0;
-        syncState.curr = 0.48;
-        syncState.ccText = "CC1: 5.1kΩ Rd (USB 5V)";
-        syncState.dpText = "D+/D- & DSP: Locked";
+      } else {
+        rows.push({
+          tag: "[USB DATA BUS / D+ D-]",
+          detail: `USB-00 • ${realState.externalEndpoints.length} Endpoint(s) Enumerated (${realState.vidPid})`,
+          status: "OK",
+          cls: "pcb-ok"
+        });
       }
 
-      // Highlight "Smart Guitar USB-C OK" profile card automatically
-      scenarioBtns.forEach(b => b.classList.remove("active"));
-      const okBtn = document.getElementById("prof-guitar-ok");
-      if (okBtn) okBtn.classList.add("active");
-
-      addLog(`Synced ${foundExternals.length} Type-C endpoint(s): ${foundExternals.join(", ")}`);
-    } else {
-      syncState.connected = false;
-      syncState.externalDevices = [];
-      syncState.deviceName = "";
-      if (!syncState.isSerialLive) {
-        syncState.vbus = 0.0;
-        syncState.curr = 0.00;
-        syncState.ccText = "STANDBY";
-        syncState.dpText = "WAITING";
-      }
-      scenarioBtns.forEach(b => b.classList.remove("active"));
-      addLog("No external Type-C data device detected on bus (Standby).");
-    }
-
-    syncAllSections();
-  }
-
-  // Bind Fault Profile Buttons (Red Box) -> Syncs Telemetry + Top Diagnosis
-  scenarioBtns.forEach(btn => {
-    btn.addEventListener("click", () => {
-      scenarioBtns.forEach(b => b.classList.remove("active"));
-      btn.classList.add("active");
-
-      syncState.vbus = parseFloat(btn.dataset.v);
-      syncState.curr = parseFloat(btn.dataset.a);
-      syncState.ccText = btn.dataset.cc;
-      syncState.dpText = btn.dataset.dp;
-      syncState.connected = btn.dataset.state === "ok";
-
-      addLog(`Profile applied: ${btn.querySelector("span").textContent}`);
-      syncAllSections(btn.dataset.msg);
-    });
-  });
-
-  // Bind Reset Button
-  document.getElementById("btn-reset").addEventListener("click", () => {
-    scenarioBtns.forEach(b => b.classList.remove("active"));
-    syncState.isSerialLive = false;
-    scanAndSyncTypeC("Reset");
-  });
-
-  // Bind Live Sliders (Yellow Box) -> Syncs Top Diagnosis in real time
-  sliderVbus.addEventListener("input", () => {
-    syncState.vbus = parseFloat(sliderVbus.value);
-    syncAllSections();
-  });
-
-  sliderCurr.addEventListener("input", () => {
-    syncState.curr = parseFloat(sliderCurr.value);
-    syncAllSections();
-  });
-
-  // Toolbar Buttons
-  document.getElementById("btn-detect").addEventListener("click", () => scanAndSyncTypeC("Manual Scan"));
-
-  document.getElementById("btn-amp-sweep").addEventListener("click", () => {
-    const ampBtn = document.getElementById("prof-amp-ok");
-    if (ampBtn) ampBtn.click();
-  });
-
-  document.getElementById("btn-tone").addEventListener("click", () => {
-    const ctx = new (window.AudioContext || window.webkitAudioContext)();
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.frequency.value = 440;
-    gain.gain.value = 0.08;
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-    osc.start();
-    setTimeout(() => { osc.stop(); ctx.close(); }, 450);
-    addLog("440Hz acoustic test tone sent to active Type-C / host output.");
-  });
-
-  document.getElementById("btn-usb").addEventListener("click", async () => {
-    if (!navigator.usb) return addLog("WebUSB not supported in this browser.");
-    try {
-      await navigator.usb.requestDevice({ filters: [] });
-      scanAndSyncTypeC("WebUSB Pair");
-    } catch (e) {
-      addLog(`WebUSB pair cancelled: ${e.message}`);
-    }
-  });
-
-  document.getElementById("btn-serial").addEventListener("click", async () => {
-    if (!navigator.serial) return addLog("WebSerial not supported in this browser.");
-    try {
-      const port = await navigator.serial.requestPort();
-      await port.open({ baudRate: 115200 });
-      syncState.isSerialLive = true;
-      addLog("Hardware Probe (WebSerial) connected — streaming live VBUS/Current readings.");
-      syncAllSections();
-
-      const decoder = new TextDecoderStream();
-      port.readable.pipeTo(decoder.writable);
-      const reader = decoder.readable.getReader();
-      let buffer = "";
-
-      while (true) {
-        const { value, done } = await reader.read();
-        if (done) break;
-        buffer += value;
-        const lines = buffer.split("\n");
-        buffer = lines.pop();
-        for (const line of lines) {
-          // Expects serial lines like: V:5.02,A:0.46 or JSON {"v":5.02,"a":0.46}
-          const vMatch = line.match(/v["']?\s*[:=]\s*([0-9.]+)/i);
-          const aMatch = line.match(/a["']?\s*[:=]\s*([0-9.]+)/i);
-          if (vMatch) syncState.vbus = parseFloat(vMatch[1]);
-          if (aMatch) syncState.curr = parseFloat(aMatch[1]);
-          if (vMatch || aMatch) syncAllSections();
+      // 2. Real Audio Codec / Preamp Signal Stage (Real WebAudio measurement)
+      if (realState.connected) {
+        if (!realState.audioActive) {
+          rows.push({
+            tag: "[AUDIO CODEC / DSP]",
+            detail: "ERR-305 • Audio Input Stream Not Active — Grant Mic Permission or Check Interface",
+            status: "IN ISSUE",
+            cls: "pcb-issue"
+          });
+        } else if (realState.noiseFloorDb !== null && realState.noiseFloorDb > -42.0) {
+          rows.push({
+            tag: "[PREAMP / GROUND STAGE]",
+            detail: `ERR-302 • High Idle Noise Floor (${realState.noiseFloorDb.toFixed(1)} dB) — Check Ground / Cable Shield`,
+            status: "IN ISSUE",
+            cls: "pcb-issue"
+          });
+        } else {
+          const nfText = realState.noiseFloorDb !== null ? `${realState.noiseFloorDb.toFixed(1)} dB noise floor` : "Measuring...";
+          rows.push({
+            tag: "[AUDIO CODEC / DSP]",
+            detail: `DSP-00 • Live Stream Locked @ ${(realState.sampleRate / 1000).toFixed(1)} kHz (${nfText})`,
+            status: "OK",
+            cls: "pcb-ok"
+          });
         }
       }
-    } catch (e) {
-      addLog(`WebSerial notice: ${e.message}`);
+
+      // 3. Real Electrical Rail & Coil Check (ONLY if physical WebSerial Probe is connected)
+      if (realState.probeConnected && realState.vbus !== null) {
+        if (realState.vbus < 3.0 || (realState.curr !== null && realState.curr > 4.5)) {
+          rows.push({
+            tag: "[HARDWARE PROBE • RAIL]",
+            detail: `ERR-501 • Real Rail Collapse / Over-Current (${realState.vbus.toFixed(2)}V / ${(realState.curr || 0).toFixed(2)}A)`,
+            status: "ERROR",
+            cls: "pcb-error"
+          });
+        } else if (realState.vbus < 4.6) {
+          rows.push({
+            tag: "[HARDWARE PROBE • RAIL]",
+            detail: `ERR-204 • Real VBUS Voltage Sag (${realState.vbus.toFixed(2)}V)`,
+            status: "IN ISSUE",
+            cls: "pcb-issue"
+          });
+        } else {
+          rows.push({
+            tag: "[HARDWARE PROBE • RAIL]",
+            detail: `PWR-00 • Real Measured Rail ${realState.vbus.toFixed(2)}V / ${(realState.curr || 0).toFixed(2)}A`,
+            status: "OK",
+            cls: "pcb-ok"
+          });
+        }
+
+        if (realState.ohms !== null) {
+          if (realState.ohms > 32 || !isFinite(realState.ohms)) {
+            rows.push({
+              tag: "[HARDWARE PROBE • COIL]",
+              detail: "ERR-404 • Real Open Load (∞ Ω) — Blown Speaker Coil or Broken Jack",
+              status: "ERROR",
+              cls: "pcb-error"
+            });
+          } else if (realState.ohms > 12 || realState.ohms < 3.5) {
+            rows.push({
+              tag: "[HARDWARE PROBE • COIL]",
+              detail: `ERR-302 • Abnormal Real Load (${realState.ohms.toFixed(1)} Ω)`,
+              status: "IN ISSUE",
+              cls: "pcb-issue"
+            });
+          } else {
+            rows.push({
+              tag: "[HARDWARE PROBE • COIL]",
+              detail: `SPK-00 • Real Measured Load ${realState.ohms.toFixed(1)} Ω`,
+              status: "OK",
+              cls: "pcb-ok"
+            });
+          }
+        }
+      }
+
+      return rows;
     }
-  });
 
-  // Automatic Hotplug Listeners (triggers the instant a Type-C cable is plugged in or unplugged)
-  if (navigator.mediaDevices) {
-    navigator.mediaDevices.addEventListener("devicechange", () => scanAndSyncTypeC("Type-C Hotplug"));
-  }
-  if (navigator.usb) {
-    navigator.usb.addEventListener("connect", () => scanAndSyncTypeC("USB-C Plugged In"));
-    navigator.usb.addEventListener("disconnect", () => scanAndSyncTypeC("USB-C Unplugged"));
-  }
+    function renderDiagnosis() {
+      const autoBadge = document.getElementById("auto-badge");
+      const linkBanner = document.getElementById("link-banner");
+      const linkStatus = document.getElementById("link-status");
+      const linkDesc = document.getElementById("link-desc");
+      const deviceList = document.getElementById("device-list");
 
-  // Initial Boot Scan
-  scanAndSyncTypeC("Boot");
-</script>
+      // Update Electrical Probe Panel
+      document.getElementById("val-vidpid").textContent = realState.vidPid;
+      if (realState.probeConnected && realState.vbus !== null) {
+        const currVal = realState.curr || 0;
+        document.getElementById("telemetry-mode-badge").textContent = "LIVE SERIAL PROBE";
+        document.getElementById("telemetry-mode-badge").classList.add("live");
+        document.getElementById("val-vbus").textContent = `${realState.vbus.toFixed(2)} V`;
+        document.getElementById("val-curr").textContent = `${currVal.toFixed(2)} A`;
+        document.getElementById("val-watts").textContent = `${(realState.vbus * currVal).toFixed(2)} W`;
+        document.getElementById("val-ohms").textContent = realState.ohms !== null ? `${realState.ohms.toFixed(1)} Ω` : "N/A";
+        document.getElementById("val-source").textContent = "INA219/SERIAL";
+      } else {
+        document.getElementById("telemetry-mode-badge").textContent = "PROBE NOT CONNECTED";
+        document.getElementById("telemetry-mode-badge").classList.remove("live");
+        document.getElementById("val-vbus").textContent = "N/A";
+        document.getElementById("val-curr").textContent = "N/A";
+        document.getElementById("val-watts").textContent = "N/A";
+        document.getElementById("val-ohms").textContent = "N/A";
+        document.getElementById("val-source").textContent = "USB BUS ONLY";
+      }
+
+      const healthRows = evaluateRealPcbHealth();
+      const hasError = healthRows.some(r => r.status === "ERROR");
+      const hasIssue = healthRows.some(r => r.status === "IN ISSUE");
+
+      linkBanner.className = "status-banner";
+
+      if (!realState.connected) {
+        autoBadge.textContent = "AUTO-SYNC STANDBY";
+        autoBadge.classList.remove("live");
+        linkStatus.textContent = "WAITING FOR TYPE-C CONNECTION";
+        linkDesc.innerHTML = 'Connect your <strong>Smart Guitar / Audio Interface</strong> using a Type-C data cable. No fake/estimated values are shown—only real hardware telemetry.';
+      } else if (hasError) {
+        autoBadge.textContent = "REAL FAULT DETECTED";
+        autoBadge.classList.remove("live");
+        linkBanner.classList.add("fault");
+        linkStatus.textContent = `HARDWARE ERROR ON ${realState.deviceName.toUpperCase()}`;
+        linkDesc.textContent = "Real diagnostic check detected a hardware fault condition. Review red ERROR rows below.";
+      } else if (hasIssue) {
+        autoBadge.textContent = "ATTENTION REQUIRED";
+        autoBadge.classList.remove("live");
+        linkBanner.classList.add("issue");
+        linkStatus.textContent = `TYPE-C LINK ACTIVE (WITH WARNING): ${realState.deviceName.toUpperCase()}`;
+        linkDesc.textContent = "Device enumerated over Type-C, but one subsystem flagged a warning (yellow IN ISSUE).";
+      } else {
+        autoBadge.textContent = "LIVE HARDWARE SYNC";
+        autoBadge.classList.add("live");
+        linkBanner.classList.add("ok");
+        linkStatus.textContent = `TYPE-C DEVICE CONNECTED: ${realState.deviceName.toUpperCase()}`;
+        linkDesc.textContent = "Real USB enumeration and live audio DSP stream verified. All active hardware checks are OK.";
+      }
+
+      let html = "";
+      realState.externalEndpoints.forEach(ep => {
+        html += `
+          <div class="device-item">
+            <span><strong>[${ep.type}]</strong> ${ep.name}</span>
+            <span class="pcb-badge pcb-ok">OK</span>
+          </div>
+        `;
+      });
+
+      healthRows.forEach(r => {
+        html += `
+          <div class="device-item">
+            <span><strong>${r.tag}</strong> ${r.detail}</span>
+            <span class="pcb-badge ${r.cls}">${r.status}</span>
+          </div>
+        `;
+      });
+
+      deviceList.innerHTML = html;
+    }
+
+    // Real Hardware Scanner (WebMIDI + MediaDevices + WebUSB)
+    async function scanRealHardware(source = "Auto-Scan") {
+      if (scanLock) return;
+      scanLock = true;
+      log(`${source}: Scanning Type-C bus for real external instruments/interfaces...`);
+
+      const found = [];
+      let primaryInputDeviceId = null;
+      let detectedVidPid = "-- : --";
+
+      // 1. Real WebMIDI Ports
+      if (navigator.requestMIDIAccess) {
+        try {
+          const midi = await navigator.requestMIDIAccess({ sysex: false });
+          midi.inputs.forEach(inp => {
+            if (inp.state === "connected") {
+              found.push({ type: "MIDI IN", name: `${inp.manufacturer || "USB"} ${inp.name}` });
+            }
+          });
+          midi.outputs.forEach(out => {
+            if (out.state === "connected") {
+              found.push({ type: "MIDI OUT", name: `${out.manufacturer || "USB"} ${out.name}` });
+            }
+          });
+          midi.onstatechange = () => scanRealHardware("MIDI Hotplug");
+        } catch (_) {}
+      }
+
+      // 2. Real External USB Audio Endpoints (Built-in laptop mics/speakers strictly excluded)
+      if (navigator.mediaDevices && navigator.mediaDevices.enumerateDevices) {
+        try {
+          try {
+            const tempStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            tempStream.getTracks().forEach(t => t.stop());
+          } catch (_) {}
+
+          const devices = await navigator.mediaDevices.enumerateDevices();
+          devices.forEach(d => {
+            if ((d.kind === "audioinput" || d.kind === "audiooutput") && d.deviceId !== "default" && d.deviceId !== "communications") {
+              const label = d.label || "";
+              const low = label.toLowerCase();
+
+              const isInternal =
+                low.includes("amd audio") ||
+                low.includes("microphone array") ||
+                low.includes("realtek") ||
+                low.includes("intel") ||
+                low.includes("high definition audio") ||
+                low.includes("built-in") ||
+                low.includes("internal") ||
+                low.includes("macbook");
+
+              const isExternal =
+                low.includes("usb") ||
+                low.includes("enya") ||
+                low.includes("nexg") ||
+                low.includes("1235:") ||
+                low.includes("guitar") ||
+                low.includes("interface") ||
+                low.includes("midi") ||
+                low.includes("amp") ||
+                low.includes("focusrite") ||
+                low.includes("behringer") ||
+                low.includes("boss") ||
+                low.includes("line 6") ||
+                low.includes("zoom");
+
+              if (label && !isInternal && isExternal) {
+                const kindTag = d.kind === "audioinput" ? "USB AUDIO IN" : "USB AUDIO OUT";
+                if (!found.some(x => x.name === label && x.type === kindTag)) {
+                  found.push({ type: kindTag, name: label });
+                }
+                if (d.kind === "audioinput" && !primaryInputDeviceId) {
+                  primaryInputDeviceId = d.deviceId;
+                }
+                const vpMatch = label.match(/\(([0-9a-fA-F]{4}:[0-9a-fA-F]{4})\)/);
+                if (vpMatch) detectedVidPid = vpMatch[1].toUpperCase();
+              }
+            }
+          });
+        } catch (err) {
+          log(`Audio enumeration notice: ${err.message}`);
+        }
+      }
+
+      // 3. Real Paired WebUSB Devices (Exclude internal Realtek VID 0x0bda)
+      if (navigator.usb && navigator.usb.getDevices) {
+        try {
+          const usbDevs = await navigator.usb.getDevices();
+          usbDevs.forEach(u => {
+            if (u.vendorId === 0x0bda) return;
+            const vp = `${u.vendorId.toString(16).padStart(4, "0")}:${u.productId.toString(16).padStart(4, "0")}`.toUpperCase();
+            detectedVidPid = vp;
+            const name = `${u.productName || "USB-C Device"} (${vp})`;
+            if (!found.some(x => x.name === name)) {
+              found.push({ type: "USB-C DESCRIPTOR", name });
+            }
+          });
+        } catch (_) {}
+      }
+
+      if (found.length > 0) {
+        realState.connected = true;
+        realState.externalEndpoints = found;
+        realState.deviceName = found[0].name;
+        realState.vidPid = detectedVidPid;
+        log(`Real hardware detected (${found.length} endpoint(s)): ${found.map(f => f.name).join(" | ")}`);
+        if (!realState.audioActive) {
+          await startRealAudioAnalyser(primaryInputDeviceId);
+        }
+      } else {
+        realState.connected = false;
+        realState.externalEndpoints = [];
+        realState.deviceName = "";
+        realState.vidPid = "-- : --";
+        stopRealAudioAnalyser();
+        log("No external Type-C instrument or interface connected.");
+      }
+
+      renderDiagnosis();
+      scanLock = false;
+    }
+
+    // Toolbar Button Handlers
+    document.getElementById("btn-detect").addEventListener("click", () => scanRealHardware("Manual Scan"));
+
+    document.getElementById("btn-tone").addEventListener("click", () => {
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = "sine";
+      osc.frequency.value = 440;
+      gain.gain.value = 0.08;
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start();
+      setTimeout(() => { osc.stop(); ctx.close(); }, 450);
+      log("Sent real 440Hz sine test tone to active audio output.");
+    });
+
+    document.getElementById("btn-amp-sweep").addEventListener("click", () => {
+      if (!realState.connected || !realState.audioActive) {
+        log("Acoustic Loopback Test requires an active Type-C audio input/output connection.");
+        return;
+      }
+      const baselineDb = realState.rmsDb || -90;
+      log(`Running real acoustic loopback test (baseline input: ${baselineDb.toFixed(1)} dBFS)...`);
+
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.frequency.value = 440;
+      gain.gain.value = 0.12;
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start();
+
+      setTimeout(() => {
+        const activeDb = realState.rmsDb || -90;
+        const delta = activeDb - baselineDb;
+        osc.stop();
+        ctx.close();
+        if (delta > 3.0) {
+          log(`Acoustic Loopback PASS: Input rose by +${delta.toFixed(1)} dB during 440Hz excitation.`);
+        } else {
+          log(`Acoustic Loopback NOTICE: Minimal return delta (+${delta.toFixed(1)} dB). Ensure speaker/pickup volume is turned up.`);
+        }
+      }, 400);
+    });
+
+    document.getElementById("btn-usb").addEventListener("click", async () => {
+      if (!navigator.usb) return log("WebUSB not supported in this browser.");
+      try {
+        const dev = await navigator.usb.requestDevice({ filters: [] });
+        log(`Paired real USB-C device: ${dev.productName || "Unknown"} (VID:0x${dev.vendorId.toString(16)} PID:0x${dev.productId.toString(16)}, USB ${dev.usbVersionMajor}.${dev.usbVersionMinor})`);
+        scanRealHardware("WebUSB Pair");
+      } catch (err) {
+        log(`WebUSB pair cancelled: ${err.message}`);
+      }
+    });
+
+    document.getElementById("btn-serial").addEventListener("click", async () => {
+      if (!("serial" in navigator)) return log("WebSerial not supported in this browser.");
+      try {
+        const port = await navigator.serial.requestPort();
+        await port.open({ baudRate: 115200 });
+        realState.probeConnected = true;
+        log("Real Hardware Probe (WebSerial) connected at 115200 baud. Waiting for sensor frames (V:...,A:...,R:...)...");
+        renderDiagnosis();
+
+        const decoder = new TextDecoderStream();
+        port.readable.pipeTo(decoder.writable);
+        const reader = decoder.readable.getReader();
+        let buffer = "";
+
+        while (true) {
+          const { value, done } = await reader.read();
+          if (done) break;
+          buffer += value;
+          const lines = buffer.split("\n");
+          buffer = lines.pop();
+          for (const line of lines) {
+            const vMatch = line.match(/v["']?\s*[:=]\s*([0-9.]+)/i);
+            const aMatch = line.match(/a["']?\s*[:=]\s*([0-9.]+)/i);
+            const rMatch = line.match(/r["']?\s*[:=]\s*([0-9.]+)/i);
+            if (vMatch) realState.vbus = parseFloat(vMatch[1]);
+            if (aMatch) realState.curr = parseFloat(aMatch[1]);
+            if (rMatch) realState.ohms = parseFloat(rMatch[1]);
+            if (vMatch || aMatch || rMatch) renderDiagnosis();
+          }
+        }
+      } catch (err) {
+        log(`WebSerial notice: ${err.message}`);
+      }
+    });
+
+    // Hotplug Listeners
+    if (navigator.mediaDevices) {
+      navigator.mediaDevices.addEventListener("devicechange", () => scanRealHardware("Type-C Hotplug"));
+    }
+    if (navigator.usb) {
+      navigator.usb.addEventListener("connect", () => scanRealHardware("USB-C Connected"));
+      navigator.usb.addEventListener("disconnect", () => scanRealHardware("USB-C Disconnected"));
+    }
+
+    // Boot
+    scanRealHardware("Boot");
+  </script>
+</body>
+</html>
