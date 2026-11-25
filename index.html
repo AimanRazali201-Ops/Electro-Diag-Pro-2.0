@@ -354,12 +354,12 @@
     <section class="card full-width">
       <h2>
         Active PCB &amp; Acoustic Link Diagnosis
-        <span id="auto-badge" class="badge">AUTO-SYNC STANDBY</span>
+        <span id="auto-badge" class="badge">STANDBY • UNPLUGGED</span>
       </h2>
       <div id="link-banner" class="status-banner">
         <span id="link-status" class="status-label">WAITING FOR TYPE-C CONNECTION</span>
         <div id="link-desc">
-          Connect your <strong>Smart Guitar / Audio Interface</strong> using a Type-C data cable to your laptop. Click <strong>Scan &amp; Sync PCB</strong> once to grant device access permission, and live hardware readings will appear automatically.
+          Plug in your <strong>Smart Guitar / Audio Interface</strong> using a Type-C data cable, then click <strong>🎹 Scan &amp; Sync PCB</strong> to read all live Type-C electronics (Audio DSP, WebMIDI, WebUSB &amp; WebHID). Use <strong>🔌 Hardware Probe (WebSerial)</strong> to connect via Bluetooth.
         </div>
       </div>
       <div id="device-list" class="device-list"></div>
@@ -398,7 +398,7 @@
         </div>
       </section>
 
-      <!-- RIGHT BOX: Real Electrical Rail Reader (WebSerial Sensor Probe) -->
+      <!-- RIGHT BOX: Real Electrical Rail Reader (Bluetooth / WebSerial Probe) -->
       <section class="card" style="margin-bottom: 0;">
         <h2>
           Live Rail &amp; PCB Probe Telemetry
@@ -448,25 +448,30 @@
 
   <script>
     const realState = {
-      connected: false,
+      typeCScanActive: false,   // True when "🎹 Scan & Sync PCB" is pressed for Type-C cable
+      connected: false,         // True when Type-C device is detected
       deviceName: "",
-      portName: "AUTO-DETECT",
+      portName: "NONE",
       vidPid: "-- : --",
       externalEndpoints: [],
+      hasMidiPort: false,
+      hasHidPort: false,
       uiResponsive: false,
       midiEventCount: 0,
-      lastMidiMsg: "",
-      // Real Audio DSP metrics (from Web Audio API AnalyserNode)
+      hidEventCount: 0,
+      lastControlPacket: "",
+      // Real Audio DSP metrics (Type-C USB Audio)
       audioActive: false,
       sampleRate: null,
       rmsDb: null,
       noiseFloorDb: null,
-      // Real Electrical & PCB Subsystem metrics (populated by WebSerial PCB stream)
+      // Real Electrical & PCB Subsystem metrics (Bluetooth / WebSerial Hardware Probe)
       probeConnected: false,
+      probePortLabel: "NONE",
       vbus: null,
       curr: null,
       ohms: null,
-      subsystems: [] // Holds live PCB modules: [{ port, code, name, detail, status }]
+      subsystems: [] // Holds live PCB modules from Bluetooth/WebSerial probe: [{ port, code, name, detail, status }]
     };
 
     let audioCtx = null;
@@ -475,6 +480,8 @@
     let meterRaf = null;
     let scanLock = false;
     let activeSerialPort = null;
+    let serialReader = null;
+    let openedHidDevices = [];
 
     const logBox = document.getElementById("console-log");
     function log(msg) {
@@ -484,6 +491,53 @@
       line.innerHTML = `<span class="log-time">[${now}]</span>${msg}`;
       logBox.appendChild(line);
       logBox.scrollTop = logBox.scrollHeight;
+    }
+
+    // Reset Type-C Cable telemetry when cable is unplugged
+    async function resetTypeCTelemetry(reason = "") {
+      realState.typeCScanActive = false;
+      realState.connected = false;
+      realState.deviceName = "";
+      realState.portName = "NONE";
+      realState.vidPid = "-- : --";
+      realState.externalEndpoints = [];
+      realState.hasMidiPort = false;
+      realState.hasHidPort = false;
+      realState.uiResponsive = false;
+      realState.midiEventCount = 0;
+      realState.hidEventCount = 0;
+      realState.lastControlPacket = "";
+
+      for (const hidDev of openedHidDevices) {
+        try { if (hidDev.opened) await hidDev.close(); } catch (_) {}
+      }
+      openedHidDevices = [];
+
+      stopRealAudioAnalyser();
+      if (reason) log(reason);
+      renderDiagnosis();
+    }
+
+    // Reset Bluetooth / WebSerial Probe telemetry when probe disconnects
+    async function resetSerialProbeTelemetry(reason = "") {
+      realState.probeConnected = false;
+      realState.probePortLabel = "NONE";
+      realState.vbus = null;
+      realState.curr = null;
+      realState.ohms = null;
+      realState.subsystems = [];
+
+      if (serialReader) {
+        try { await serialReader.cancel(); } catch (_) {}
+        serialReader = null;
+      }
+      if (activeSerialPort) {
+        try { await activeSerialPort.close(); } catch (_) {}
+        activeSerialPort = null;
+      }
+
+      if (reason) log(reason);
+      renderDiagnosis();
     }
 
     // Start real-time Web Audio Analyser on the connected Type-C Smart Guitar / Audio Interface
@@ -501,6 +555,13 @@
         analyserNode.fftSize = 2048;
         source.connect(analyserNode);
 
+        // Immediately clear Type-C readings when the USB audio track ends (cable unplugged)
+        micStream.getAudioTracks().forEach(track => {
+          track.onended = () => {
+            resetTypeCTelemetry("Type-C audio cable disconnected — cleared all Type-C live readings.");
+          };
+        });
+
         realState.audioActive = true;
         realState.sampleRate = audioCtx.sampleRate;
         realState.noiseFloorDb = -96.0;
@@ -514,7 +575,7 @@
         let frameCount = 0;
 
         function sampleLoop() {
-          if (!analyserNode) return;
+          if (!analyserNode || !realState.connected) return;
           analyserNode.getFloatTimeDomainData(buffer);
           let sumSq = 0;
           for (let i = 0; i < buffer.length; i++) {
@@ -524,7 +585,6 @@
           const db = rms > 0.000001 ? 20 * Math.log10(rms) : -96.0;
           realState.rmsDb = db;
 
-          // Track lowest quiet floor after initial settle
           if (frameCount > 15 && db < -35) {
             realState.noiseFloorDb = realState.noiseFloorDb === -96.0
               ? db
@@ -580,43 +640,19 @@
     function evaluateRealPcbHealth() {
       const rows = [];
 
-      // 1. Live PCB Subsystems reported directly by the Smart Guitar MCU over Type-C Serial
-      if (realState.subsystems && realState.subsystems.length > 0) {
-        realState.subsystems.forEach(mod => {
-          const cond = (mod.status || "OK").toUpperCase();
-          const cls = cond === "OK" ? "pcb-ok" : (cond === "ERROR" ? "pcb-error" : "pcb-issue");
-          rows.push({
-            tag: `[${mod.port || realState.portName}]`,
-            detail: `${mod.code || "MOD-00"} • ${mod.name}: ${mod.detail}`,
-            status: cond,
-            cls: cls
-          });
-        });
-      }
-
-      // 2. USB Data Bus & Enumeration Check (Real)
-      if (!realState.connected) {
-        rows.push({
-          tag: "[USB-C / D+ D-]",
-          detail: "ERR-109 • No Type-C Smart Guitar / Audio Device Enumerated (Check Data Cable)",
-          status: "ERROR",
-          cls: "pcb-error"
-        });
-      } else {
+      // A. Type-C Cable Hardware Checks (Only when Type-C cable is scanned & connected)
+      if (realState.typeCScanActive && realState.connected) {
         rows.push({
           tag: `[${realState.portName}]`,
-          detail: `USB-00 • ${realState.externalEndpoints.length} Endpoint(s) Active (${realState.vidPid})`,
+          detail: `USB-00 • ${realState.externalEndpoints.length} Type-C Endpoint(s) Active (${realState.vidPid})`,
           status: "OK",
           cls: "pcb-ok"
         });
-      }
 
-      // 3. Real Audio Codec / Preamp Signal Stage (Real WebAudio measurement)
-      if (realState.connected) {
         if (!realState.audioActive) {
           rows.push({
             tag: "[I2S / AUDIO CODEC]",
-            detail: "ERR-305 • Audio Input Stream Not Active — Grant Mic Permission or Check Interface",
+            detail: "ERR-305 • Audio Input Stream Not Active — Grant Mic Permission or Check Type-C Cable",
             status: "IN ISSUE",
             cls: "pcb-issue"
           });
@@ -636,10 +672,7 @@
             cls: "pcb-ok"
           });
         }
-      }
 
-      // 4. Real LCD / UI Controller & Boot-Mode Check (Over Type-C USB/MIDI)
-      if (realState.connected) {
         const lowName = realState.deviceName.toLowerCase();
         const isBootloaderMode =
           lowName.includes("rockchip") ||
@@ -655,65 +688,89 @@
             cls: "pcb-error"
           });
         } else if (realState.uiResponsive) {
+          const totalPackets = realState.midiEventCount + realState.hidEventCount;
+          const protoTag = realState.hidEventCount > 0 ? "HID/MIDI" : "MIDI/UI";
           rows.push({
-            tag: "[UART / LCD TOUCH UI]",
-            detail: `UI-00 • Touch/Knob Control Active (${realState.midiEventCount} real MIDI/UI packet(s) received)`,
+            tag: "[HID / LCD TOUCH & KNOBS]",
+            detail: `UI-00 • Touch/Knob Control Active (${totalPackets} real ${protoTag} packet(s) received)`,
             status: "OK",
             cls: "pcb-ok"
           });
-        } else {
+        } else if (realState.hasMidiPort || realState.hasHidPort) {
           rows.push({
-            tag: "[UART / LCD TOUCH UI]",
-            detail: "UI-WAIT • Tap Guitar Screen/Knob to Verify Touch & Display Controller Link",
+            tag: "[HID / LCD TOUCH & KNOBS]",
+            detail: "UI-WAIT • Tap Guitar Screen or Turn Knob to Verify HID/MIDI Touch & Display Link",
             status: "IN ISSUE",
             cls: "pcb-issue"
+          });
+        } else {
+          rows.push({
+            tag: "[LCD / MCU HOST]",
+            detail: "LCD-00 • Main Firmware Active & USB Audio Class Enumerated (No HID/MIDI Control Endpoint)",
+            status: "OK",
+            cls: "pcb-ok"
           });
         }
       }
 
-      // 5. Real Electrical Rail & Coil Check (Live WebSerial Probe / Smart Guitar Telemetry)
-      if (realState.probeConnected && realState.vbus !== null) {
-        if (realState.vbus < 3.0 || (realState.curr !== null && realState.curr > 4.5)) {
-          rows.push({
-            tag: `[${realState.portName} • VBUS RAIL]`,
-            detail: `ERR-501 • Real Rail Collapse / Over-Current (${realState.vbus.toFixed(2)}V / ${(realState.curr || 0).toFixed(2)}A)`,
-            status: "ERROR",
-            cls: "pcb-error"
+      // B. Bluetooth / WebSerial Hardware Probe Subsystems & Rail Telemetry
+      if (realState.probeConnected) {
+        if (realState.subsystems && realState.subsystems.length > 0) {
+          realState.subsystems.forEach(mod => {
+            const cond = (mod.status || "OK").toUpperCase();
+            const cls = cond === "OK" ? "pcb-ok" : (cond === "ERROR" ? "pcb-error" : "pcb-issue");
+            rows.push({
+              tag: `[${mod.port || realState.probePortLabel}]`,
+              detail: `${mod.code || "BT-MOD"} • ${mod.name}: ${mod.detail}`,
+              status: cond,
+              cls: cls
+            });
           });
-        } else if (realState.vbus < 4.6) {
-          rows.push({
-            tag: `[${realState.portName} • VBUS RAIL]`,
-            detail: `ERR-204 • Real VBUS Voltage Sag (${realState.vbus.toFixed(2)}V)`,
-            status: "IN ISSUE",
-            cls: "pcb-issue"
-          });
-        } else {
-          rows.push({
-            tag: `[${realState.portName} • VBUS RAIL]`,
-            detail: `PWR-00 • Real Measured Rail ${realState.vbus.toFixed(2)}V / ${(realState.curr || 0).toFixed(2)}A`,
-            status: "OK",
-            cls: "pcb-ok"
-          });
+        }
+
+        if (realState.vbus !== null) {
+          if (realState.vbus < 3.0 || (realState.curr !== null && realState.curr > 4.5)) {
+            rows.push({
+              tag: `[${realState.probePortLabel} • VBUS RAIL]`,
+              detail: `ERR-501 • Real Rail Collapse / Over-Current (${realState.vbus.toFixed(2)}V / ${(realState.curr || 0).toFixed(2)}A)`,
+              status: "ERROR",
+              cls: "pcb-error"
+            });
+          } else if (realState.vbus < 4.6) {
+            rows.push({
+              tag: `[${realState.probePortLabel} • VBUS RAIL]`,
+              detail: `ERR-204 • Real VBUS Voltage Sag (${realState.vbus.toFixed(2)}V)`,
+              status: "IN ISSUE",
+              cls: "pcb-issue"
+            });
+          } else {
+            rows.push({
+              tag: `[${realState.probePortLabel} • VBUS RAIL]`,
+              detail: `PWR-00 • Real Measured Rail ${realState.vbus.toFixed(2)}V / ${(realState.curr || 0).toFixed(2)}A`,
+              status: "OK",
+              cls: "pcb-ok"
+            });
+          }
         }
 
         if (realState.ohms !== null) {
           if (realState.ohms > 32 || !isFinite(realState.ohms)) {
             rows.push({
-              tag: `[${realState.portName} • AMP COIL]`,
+              tag: `[${realState.probePortLabel} • AMP COIL]`,
               detail: "ERR-404 • Real Open Load (∞ Ω) — Blown Speaker Coil or Broken Jack",
               status: "ERROR",
               cls: "pcb-error"
             });
           } else if (realState.ohms > 12 || realState.ohms < 3.5) {
             rows.push({
-              tag: `[${realState.portName} • AMP COIL]`,
+              tag: `[${realState.probePortLabel} • AMP COIL]`,
               detail: `ERR-302 • Abnormal Real Load (${realState.ohms.toFixed(1)} Ω)`,
               status: "IN ISSUE",
               cls: "pcb-issue"
             });
           } else {
             rows.push({
-              tag: `[${realState.portName} • AMP COIL]`,
+              tag: `[${realState.probePortLabel} • AMP COIL]`,
               detail: `SPK-00 • Real Measured Load ${realState.ohms.toFixed(1)} Ω`,
               status: "OK",
               cls: "pcb-ok"
@@ -732,21 +789,27 @@
       const linkDesc = document.getElementById("link-desc");
       const deviceList = document.getElementById("device-list");
 
-      // Update Electrical Probe Panel
+      const anyActive = (realState.typeCScanActive && realState.connected) || realState.probeConnected;
+
+      // Update Right Panel (Bluetooth / WebSerial Hardware Probe)
       document.getElementById("val-vidpid").textContent = realState.vidPid;
       if (realState.probeConnected && realState.vbus !== null) {
         const currVal = realState.curr || 0;
-        document.getElementById("telemetry-mode-badge").textContent = "LIVE SERIAL TELEMETRY";
+        document.getElementById("telemetry-mode-badge").textContent = "BLUETOOTH / SERIAL LIVE";
         document.getElementById("telemetry-mode-badge").classList.add("live");
         document.getElementById("val-vbus").textContent = `${realState.vbus.toFixed(2)} V`;
         document.getElementById("val-curr").textContent = `${currVal.toFixed(3)} A`;
         document.getElementById("val-watts").textContent = `${(realState.vbus * currVal).toFixed(2)} W`;
         document.getElementById("val-ohms").textContent = realState.ohms !== null ? `${realState.ohms.toFixed(1)} Ω` : "N/A";
-        document.getElementById("val-source").textContent = realState.portName;
+        document.getElementById("val-source").textContent = realState.probePortLabel;
       } else if (realState.probeConnected) {
-        document.getElementById("telemetry-mode-badge").textContent = "PORT OPEN • STREAMING";
+        document.getElementById("telemetry-mode-badge").textContent = "BT SERIAL CONNECTED";
         document.getElementById("telemetry-mode-badge").classList.add("live");
-        document.getElementById("val-source").textContent = realState.portName;
+        document.getElementById("val-vbus").textContent = "WAITING";
+        document.getElementById("val-curr").textContent = "WAITING";
+        document.getElementById("val-watts").textContent = "WAITING";
+        document.getElementById("val-ohms").textContent = "WAITING";
+        document.getElementById("val-source").textContent = realState.probePortLabel;
       } else {
         document.getElementById("telemetry-mode-badge").textContent = "PROBE NOT CONNECTED";
         document.getElementById("telemetry-mode-badge").classList.remove("live");
@@ -754,49 +817,61 @@
         document.getElementById("val-curr").textContent = "N/A";
         document.getElementById("val-watts").textContent = "N/A";
         document.getElementById("val-ohms").textContent = "N/A";
-        document.getElementById("val-source").textContent = "USB BUS ONLY";
+        document.getElementById("val-source").textContent = realState.connected ? "TYPE-C ONLY" : "NONE";
+      }
+
+      if (!anyActive) {
+        autoBadge.textContent = "STANDBY • UNPLUGGED";
+        autoBadge.classList.remove("live");
+        linkBanner.className = "status-banner";
+        linkStatus.textContent = "WAITING FOR TYPE-C CONNECTION";
+        linkDesc.innerHTML = 'Plug in your <strong>Smart Guitar / Audio Interface</strong> using a Type-C data cable, then click <strong>🎹 Scan &amp; Sync PCB</strong> to read all live Type-C electronics (Audio DSP, WebMIDI, WebUSB &amp; WebHID). Use <strong>🔌 Hardware Probe (WebSerial)</strong> to connect via Bluetooth.';
+        deviceList.innerHTML = "";
+        return;
       }
 
       const healthRows = evaluateRealPcbHealth();
       const hasError = healthRows.some(r => r.status === "ERROR");
       const hasIssue = healthRows.some(r => r.status === "IN ISSUE");
+      const activeTitle = realState.connected
+        ? realState.deviceName.toUpperCase()
+        : `BLUETOOTH PROBE (${realState.probePortLabel})`;
 
       linkBanner.className = "status-banner";
 
-      if (!realState.connected) {
-        autoBadge.textContent = "AUTO-SYNC STANDBY";
-        autoBadge.classList.remove("live");
-        linkStatus.textContent = "WAITING FOR TYPE-C CONNECTION";
-        linkDesc.innerHTML = 'Connect your <strong>Smart Guitar / Audio Interface</strong> using a Type-C data cable. Click <strong>Scan &amp; Sync PCB</strong> to read all live PCB electronics and rail voltages.';
-      } else if (hasError) {
+      if (hasError) {
         autoBadge.textContent = "REAL FAULT DETECTED";
         autoBadge.classList.remove("live");
         linkBanner.classList.add("fault");
-        linkStatus.textContent = `HARDWARE ERROR ON ${realState.deviceName.toUpperCase()}`;
+        linkStatus.textContent = `HARDWARE ERROR ON ${activeTitle}`;
         linkDesc.textContent = "Real diagnostic check detected a hardware fault condition. Review red ERROR rows below.";
       } else if (hasIssue) {
         autoBadge.textContent = "ATTENTION REQUIRED";
         autoBadge.classList.remove("live");
         linkBanner.classList.add("issue");
-        linkStatus.textContent = `TYPE-C LINK ACTIVE (WITH WARNING): ${realState.deviceName.toUpperCase()}`;
-        linkDesc.textContent = "Device enumerated over Type-C, but one subsystem flagged a warning (yellow IN ISSUE).";
+        linkStatus.textContent = `LINK ACTIVE (WITH WARNING): ${activeTitle}`;
+        linkDesc.textContent = "Device active, but one subsystem flagged a warning (yellow IN ISSUE).";
       } else {
         autoBadge.textContent = "LIVE HARDWARE SYNC";
         autoBadge.classList.add("live");
         linkBanner.classList.add("ok");
-        linkStatus.textContent = `TYPE-C DEVICE CONNECTED: ${realState.deviceName.toUpperCase()}`;
-        linkDesc.textContent = "Real USB enumeration, PCB subsystem telemetry, and live audio DSP stream verified.";
+        linkStatus.textContent = `CONNECTED: ${activeTitle}`;
+        linkDesc.textContent = realState.connected
+          ? "Real Type-C USB enumeration, HID/MIDI control link, and live audio DSP stream verified."
+          : "Connected via Bluetooth Serial Hardware Probe. Streaming live telemetry.";
       }
 
       let html = "";
-      realState.externalEndpoints.forEach(ep => {
-        html += `
-          <div class="device-item">
-            <span><strong>[${ep.type}]</strong> ${ep.code || "EP-00"} • ${ep.name}</span>
-            <span class="pcb-badge pcb-ok">OK</span>
-          </div>
-        `;
-      });
+      if (realState.typeCScanActive && realState.connected) {
+        realState.externalEndpoints.forEach(ep => {
+          html += `
+            <div class="device-item">
+              <span><strong>[${ep.type}]</strong> ${ep.code || "EP-00"} • ${ep.name}</span>
+              <span class="pcb-badge pcb-ok">OK</span>
+            </div>
+          `;
+        });
+      }
 
       healthRows.forEach(r => {
         html += `
@@ -810,121 +885,38 @@
       deviceList.innerHTML = html;
     }
 
-    // Open & Stream Live WebSerial PCB Telemetry (Subsystems + Voltage/Current/Ohms)
-    async function connectAndStreamSerialPort(port) {
-      if (!port || activeSerialPort === port) return;
-      try {
-        activeSerialPort = port;
-        const info = port.getInfo();
-        const vid = info.usbVendorId ? info.usbVendorId.toString(16).padStart(4, "0").toUpperCase() : "USB";
-        const pid = info.usbProductId ? info.usbProductId.toString(16).padStart(4, "0").toUpperCase() : "UART";
-        realState.portName = `COM/USB (${vid}:${pid})`;
-        if (realState.vidPid === "-- : --" && info.usbVendorId) {
-          realState.vidPid = `${vid} : ${pid}`;
-        }
-        if (!realState.deviceName) {
-          realState.deviceName = `Type-C PCB (${vid}:${pid})`;
-        }
-
-        if (!port.readable) {
-          await port.open({ baudRate: 115200 });
-        }
-        realState.probeConnected = true;
-        realState.connected = true;
-        log(`Live PCB Telemetry stream opened on ${realState.portName} @ 115200 baud.`);
-        renderDiagnosis();
-
-        const decoder = new TextDecoderStream();
-        port.readable.pipeTo(decoder.writable);
-        const reader = decoder.readable.getReader();
-        let buffer = "";
-
-        while (true) {
-          const { value, done } = await reader.read();
-          if (done) break;
-          buffer += value;
-          const lines = buffer.split("\n");
-          buffer = lines.pop();
-
-          for (const line of lines) {
-            const trimmed = line.trim();
-            if (!trimmed) continue;
-
-            // 1. Try JSON payload from Smart Guitar MCU:
-            // {"vbus":5.05,"curr":0.28,"ohms":8.0,"modules":[{"port":"UART1 / ADC","code":"PRE-01","name":"Piezo & Magnetic Preamp","detail":"Bias 1.65V Stable","status":"OK"}]}
-            if (trimmed.startsWith("{")) {
-              try {
-                const data = JSON.parse(trimmed);
-                if (data.vbus !== undefined) realState.vbus = parseFloat(data.vbus);
-                if (data.curr !== undefined) realState.curr = parseFloat(data.curr);
-                if (data.ohms !== undefined) realState.ohms = parseFloat(data.ohms);
-                if (Array.isArray(data.modules)) {
-                  realState.subsystems = data.modules;
-                }
-                renderDiagnosis();
-                continue;
-              } catch (_) {}
-            }
-
-            // 2. Fallback Key-Value / Module Frame Parser (V:5.02,A:0.34,R:8.2 or MOD:PORT|CODE|NAME|DETAIL|STATUS)
-            const vMatch = trimmed.match(/v(?:bus)?["']?\s*[:=]\s*([0-9.]+)/i);
-            const aMatch = trimmed.match(/(?:a|curr)["']?\s*[:=]\s*([0-9.]+)/i);
-            const rMatch = trimmed.match(/(?:r|ohms)["']?\s*[:=]\s*([0-9.]+)/i);
-            if (vMatch) realState.vbus = parseFloat(vMatch[1]);
-            if (aMatch) realState.curr = parseFloat(aMatch[1]);
-            if (rMatch) realState.ohms = parseFloat(rMatch[1]);
-
-            if (trimmed.startsWith("MOD:")) {
-              const parts = trimmed.substring(4).split("|");
-              if (parts.length >= 4) {
-                const modObj = {
-                  port: parts[0].trim(),
-                  code: parts[1].trim(),
-                  name: parts[2].trim(),
-                  detail: parts[3].trim(),
-                  status: (parts[4] || "OK").trim().toUpperCase()
-                };
-                const idx = realState.subsystems.findIndex(m => m.code === modObj.code && m.port === modObj.port);
-                if (idx >= 0) realState.subsystems[idx] = modObj;
-                else realState.subsystems.push(modObj);
-              }
-            }
-
-            if (vMatch || aMatch || rMatch || trimmed.startsWith("MOD:")) {
-              renderDiagnosis();
-            }
-          }
-        }
-      } catch (err) {
-        activeSerialPort = null;
-        realState.probeConnected = false;
-        log(`Serial telemetry notice: ${err.message}`);
-        renderDiagnosis();
-      }
-    }
-
-    // Unified Hardware Scanner (WebMIDI + MediaDevices + WebUSB + Auto WebSerial PCB Sync)
-    async function scanRealHardware(source = "Auto-Scan", interactive = false) {
+    // 1. TYPE-C CABLE ONLY SCANNER ("🎹 Scan & Sync PCB")
+    // Scans Type-C USB Audio, WebMIDI, WebHID, and WebUSB — NEVER opens Bluetooth/Serial port picker
+    async function scanTypeCCableOnly(source = "Scan & Sync PCB", userInitiated = false) {
       if (scanLock) return;
+      if (!userInitiated && !realState.typeCScanActive) return;
+
       scanLock = true;
-      log(`${source}: Scanning Type-C bus & running PCB electronics...`);
+      if (userInitiated) {
+        realState.typeCScanActive = true;
+      }
+      log(`${source}: Scanning Type-C data cable endpoints (Audio DSP / MIDI / HID / USB)...`);
 
       const found = [];
       let primaryInputDeviceId = null;
       let detectedVidPid = "-- : --";
+      let midiFound = false;
+      let hidFound = false;
 
-      // 1. Real WebMIDI Ports
+      // A. Real Type-C WebMIDI Ports
       if (navigator.requestMIDIAccess) {
         try {
           const midi = await navigator.requestMIDIAccess({ sysex: false });
           midi.inputs.forEach(inp => {
             if (inp.state === "connected") {
+              midiFound = true;
               found.push({ type: "MIDI IN", code: "MIDI-01", name: `${inp.manufacturer || "USB"} ${inp.name}` });
               inp.onmidimessage = (msg) => {
+                if (!realState.typeCScanActive) return;
                 realState.uiResponsive = true;
                 realState.midiEventCount++;
-                realState.lastMidiMsg = Array.from(msg.data).map(b => b.toString(16).padStart(2, "0")).join(" ");
-                log(`Real UI/MIDI signal from guitar LCD/controls: [${realState.lastMidiMsg}]`);
+                realState.lastControlPacket = Array.from(msg.data).map(b => b.toString(16).padStart(2, "0")).join(" ");
+                log(`Real MIDI packet from guitar LCD/controls: [${realState.lastControlPacket}]`);
                 renderDiagnosis();
               };
             }
@@ -934,11 +926,57 @@
               found.push({ type: "MIDI OUT", code: "MIDI-02", name: `${out.manufacturer || "USB"} ${out.name}` });
             }
           });
-          midi.onstatechange = () => scanRealHardware("MIDI Hotplug", false);
+          midi.onstatechange = () => {
+            if (realState.typeCScanActive) scanTypeCCableOnly("Type-C MIDI Hotplug", false);
+          };
         } catch (_) {}
       }
+      realState.hasMidiPort = midiFound;
 
-      // 2. Real External USB Audio Endpoints (Built-in laptop mics/speakers strictly excluded)
+      // B. Real Type-C WebHID Endpoints (Buttons, Knobs, Touch Sensors, Control Surfaces)
+      if ("hid" in navigator) {
+        try {
+          const hidDevs = await navigator.hid.getDevices();
+          for (const h of hidDevs) {
+            // Exclude built-in laptop trackpads, keyboards, and Realtek/Intel internal controllers
+            if (h.vendorId === 0x0bda || h.vendorId === 0x8086 || h.vendorId === 0x04f3) continue;
+            const lowHid = (h.productName || "").toLowerCase();
+            if (lowHid.includes("touchpad") || lowHid.includes("keyboard") || lowHid.includes("mouse")) continue;
+
+            hidFound = true;
+            const vp = `${h.vendorId.toString(16).padStart(4, "0")}:${h.productId.toString(16).padStart(4, "0")}`.toUpperCase();
+            if (detectedVidPid === "-- : --") detectedVidPid = vp;
+            const hName = `${h.productName || "USB-C HID Control Surface"} (${vp})`;
+
+            if (!found.some(x => x.name === hName && x.type === "USB HID")) {
+              found.push({ type: "USB HID", code: "HID-01", name: hName });
+            }
+
+            if (!h.opened) {
+              try {
+                await h.open();
+                openedHidDevices.push(h);
+              } catch (_) {}
+            }
+
+            h.oninputreport = (event) => {
+              if (!realState.typeCScanActive) return;
+              realState.uiResponsive = true;
+              realState.hidEventCount++;
+              const bytes = new Uint8Array(event.data.buffer);
+              const hex = Array.from(bytes).slice(0, 8).map(b => b.toString(16).padStart(2, "0")).join(" ");
+              realState.lastControlPacket = hex;
+              log(`Real WebHID input report (ID 0x${event.reportId.toString(16)}): [${hex}]`);
+              renderDiagnosis();
+            };
+          }
+        } catch (err) {
+          log(`WebHID scan notice: ${err.message}`);
+        }
+      }
+      realState.hasHidPort = hidFound;
+
+      // C. Real External Type-C USB Audio Endpoints (Built-in laptop mics/speakers excluded)
       if (navigator.mediaDevices && navigator.mediaDevices.enumerateDevices) {
         try {
           try {
@@ -996,16 +1034,10 @@
         }
       }
 
-      // 3. Real Paired WebUSB Devices (Exclude internal Realtek VID 0x0bda)
-      if (navigator.usb) {
+      // D. Already-Authorized Type-C WebUSB Devices
+      if (navigator.usb && navigator.usb.getDevices) {
         try {
-          let usbDevs = await navigator.usb.getDevices();
-          if (usbDevs.length === 0 && interactive) {
-            try {
-              const picked = await navigator.usb.requestDevice({ filters: [] });
-              usbDevs = [picked];
-            } catch (_) {}
-          }
+          const usbDevs = await navigator.usb.getDevices();
           usbDevs.forEach(u => {
             if (u.vendorId === 0x0bda) return;
             const vp = `${u.vendorId.toString(16).padStart(4, "0")}:${u.productId.toString(16).padStart(4, "0")}`.toUpperCase();
@@ -1018,52 +1050,117 @@
         } catch (_) {}
       }
 
-      // 4. Auto-Sync WebSerial PCB Telemetry Port (Live Electronics + Voltage/Current/Ohms)
-      if ("serial" in navigator && !activeSerialPort) {
-        try {
-          let ports = await navigator.serial.getPorts();
-          if (ports.length === 0 && interactive) {
-            ports = [await navigator.serial.requestPort()];
-          }
-          if (ports.length > 0) {
-            connectAndStreamSerialPort(ports[0]);
-          }
-        } catch (err) {
-          log(`PCB Serial port selection notice: ${err.message}`);
-        }
-      }
-
-      if (found.length > 0 || activeSerialPort) {
+      if (found.length > 0) {
         realState.connected = true;
         realState.externalEndpoints = found;
-        if (found.length > 0) {
-          realState.deviceName = found[0].name;
-          realState.portName = found[0].type;
-        }
+        realState.deviceName = found[0].name;
+        realState.portName = found[0].type;
         if (detectedVidPid !== "-- : --") {
           realState.vidPid = detectedVidPid;
         }
-        log(`Real hardware synced (${found.length} endpoint(s)): ${found.map(f => f.name).join(" | ") || realState.portName}`);
+        log(`Type-C cable synced (${found.length} endpoint(s)): ${found.map(f => f.name).join(" | ")}`);
         if (!realState.audioActive && primaryInputDeviceId) {
           await startRealAudioAnalyser(primaryInputDeviceId);
         }
+        renderDiagnosis();
       } else {
-        realState.connected = false;
-        realState.externalEndpoints = [];
-        realState.deviceName = "";
-        realState.portName = "AUTO-DETECT";
-        realState.vidPid = "-- : --";
-        realState.subsystems = [];
-        stopRealAudioAnalyser();
-        log("No external Type-C instrument or interface connected.");
+        await resetTypeCTelemetry("No Type-C instrument detected on cable — readings cleared.");
       }
 
-      renderDiagnosis();
       scanLock = false;
     }
 
+    // 2. BLUETOOTH / WEBSERIAL HARDWARE PROBE ONLY ("🔌 Hardware Probe (WebSerial)")
+    async function connectBluetoothSerialProbe() {
+      if (!("serial" in navigator)) {
+        return log("WebSerial / Bluetooth Serial is not supported in this browser.");
+      }
+      try {
+        const port = await navigator.serial.requestPort();
+        if (activeSerialPort) {
+          await resetSerialProbeTelemetry("Switching Bluetooth Serial probe port...");
+        }
+
+        activeSerialPort = port;
+        const info = port.getInfo();
+        realState.probePortLabel = info.usbVendorId
+          ? `SERIAL (${info.usbVendorId.toString(16).padStart(4, "0").toUpperCase()}:${(info.usbProductId || 0).toString(16).padStart(4, "0").toUpperCase()})`
+          : "BT-SERIAL";
+
+        if (!port.readable) {
+          await port.open({ baudRate: 115200 });
+        }
+
+        realState.probeConnected = true;
+        log(`Bluetooth / Hardware Probe connected on ${realState.probePortLabel} @ 115200 baud.`);
+        renderDiagnosis();
+
+        const decoder = new TextDecoderStream();
+        port.readable.pipeTo(decoder.writable);
+        serialReader = decoder.readable.getReader();
+        let buffer = "";
+
+        while (true) {
+          const { value, done } = await serialReader.read();
+          if (done) break;
+          buffer += value;
+          const lines = buffer.split("\n");
+          buffer = lines.pop();
+
+          for (const line of lines) {
+            const trimmed = line.trim();
+            if (!trimmed) continue;
+
+            if (trimmed.startsWith("{")) {
+              try {
+                const data = JSON.parse(trimmed);
+                if (data.vbus !== undefined) realState.vbus = parseFloat(data.vbus);
+                if (data.curr !== undefined) realState.curr = parseFloat(data.curr);
+                if (data.ohms !== undefined) realState.ohms = parseFloat(data.ohms);
+                if (Array.isArray(data.modules)) {
+                  realState.subsystems = data.modules;
+                }
+                renderDiagnosis();
+                continue;
+              } catch (_) {}
+            }
+
+            const vMatch = trimmed.match(/v(?:bus)?["']?\s*[:=]\s*([0-9.]+)/i);
+            const aMatch = trimmed.match(/(?:a|curr)["']?\s*[:=]\s*([0-9.]+)/i);
+            const rMatch = trimmed.match(/(?:r|ohms)["']?\s*[:=]\s*([0-9.]+)/i);
+            if (vMatch) realState.vbus = parseFloat(vMatch[1]);
+            if (aMatch) realState.curr = parseFloat(aMatch[1]);
+            if (rMatch) realState.ohms = parseFloat(rMatch[1]);
+
+            if (trimmed.startsWith("MOD:")) {
+              const parts = trimmed.substring(4).split("|");
+              if (parts.length >= 4) {
+                const modObj = {
+                  port: parts[0].trim(),
+                  code: parts[1].trim(),
+                  name: parts[2].trim(),
+                  detail: parts[3].trim(),
+                  status: (parts[4] || "OK").trim().toUpperCase()
+                };
+                const idx = realState.subsystems.findIndex(m => m.code === modObj.code && m.port === modObj.port);
+                if (idx >= 0) realState.subsystems[idx] = modObj;
+                else realState.subsystems.push(modObj);
+              }
+            }
+
+            if (vMatch || aMatch || rMatch || trimmed.startsWith("MOD:")) {
+              renderDiagnosis();
+            }
+          }
+        }
+      } catch (err) {
+        await resetSerialProbeTelemetry(`Bluetooth / Serial probe disconnected: ${err.message}`);
+      }
+    }
+
     // Toolbar Button Handlers
-    document.getElementById("btn-detect").addEventListener("click", () => scanRealHardware("Scan & Sync PCB", true));
+    document.getElementById("btn-detect").addEventListener("click", () => scanTypeCCableOnly("Scan & Sync PCB", true));
+    document.getElementById("btn-serial").addEventListener("click", connectBluetoothSerialProbe);
 
     document.getElementById("btn-tone").addEventListener("click", () => {
       const ctx = new (window.AudioContext || window.webkitAudioContext)();
@@ -1110,47 +1207,60 @@
     });
 
     document.getElementById("btn-usb").addEventListener("click", async () => {
-      if (!navigator.usb) return log("WebUSB not supported in this browser.");
       try {
-        const dev = await navigator.usb.requestDevice({ filters: [] });
-        log(`Paired real USB-C device: ${dev.productName || "Unknown"} (VID:0x${dev.vendorId.toString(16)} PID:0x${dev.productId.toString(16)}, USB ${dev.usbVersionMajor}.${dev.usbVersionMinor})`);
-        scanRealHardware("WebUSB Pair", false);
+        let pairedSomething = false;
+        if (navigator.usb) {
+          try {
+            const dev = await navigator.usb.requestDevice({ filters: [] });
+            log(`Paired real USB-C device: ${dev.productName || "Unknown"} (VID:0x${dev.vendorId.toString(16)} PID:0x${dev.productId.toString(16)})`);
+            pairedSomething = true;
+          } catch (_) {}
+        }
+        if (!pairedSomething && "hid" in navigator) {
+          const hDevs = await navigator.hid.requestDevice({ filters: [] });
+          if (hDevs && hDevs.length > 0) {
+            log(`Paired real USB-C HID control surface: ${hDevs[0].productName || "HID Device"}`);
+            pairedSomething = true;
+          }
+        }
+        if (pairedSomething && realState.typeCScanActive) {
+          scanTypeCCableOnly("USB-C / HID Pair", false);
+        }
       } catch (err) {
-        log(`WebUSB pair cancelled: ${err.message}`);
+        log(`USB-C / HID pair cancelled: ${err.message}`);
       }
     });
 
-    document.getElementById("btn-serial").addEventListener("click", async () => {
-      if (!("serial" in navigator)) return log("WebSerial not supported in this browser.");
-      try {
-        const port = await navigator.serial.requestPort();
-        await connectAndStreamSerialPort(port);
-      } catch (err) {
-        log(`WebSerial notice: ${err.message}`);
-      }
-    });
-
-    // Hotplug Listeners
+    // Hotplug & Instant Disconnect Listeners
     if (navigator.mediaDevices) {
-      navigator.mediaDevices.addEventListener("devicechange", () => scanRealHardware("Type-C Hotplug", false));
+      navigator.mediaDevices.addEventListener("devicechange", () => {
+        if (realState.typeCScanActive) scanTypeCCableOnly("Type-C Cable Change", false);
+      });
     }
     if (navigator.usb) {
-      navigator.usb.addEventListener("connect", () => scanRealHardware("USB-C Connected", false));
-      navigator.usb.addEventListener("disconnect", () => scanRealHardware("USB-C Disconnected", false));
+      navigator.usb.addEventListener("connect", () => {
+        if (realState.typeCScanActive) scanTypeCCableOnly("USB-C Connected", false);
+      });
+      navigator.usb.addEventListener("disconnect", () => {
+        resetTypeCTelemetry("Type-C cable unplugged — all Type-C readings stopped and cleared.");
+      });
+    }
+    if ("hid" in navigator) {
+      navigator.hid.addEventListener("connect", () => {
+        if (realState.typeCScanActive) scanTypeCCableOnly("USB-C HID Connected", false);
+      });
+      navigator.hid.addEventListener("disconnect", () => {
+        resetTypeCTelemetry("Type-C HID device unplugged — all Type-C readings stopped and cleared.");
+      });
     }
     if ("serial" in navigator) {
-      navigator.serial.addEventListener("connect", () => scanRealHardware("Serial Connected", false));
       navigator.serial.addEventListener("disconnect", () => {
-        activeSerialPort = null;
-        realState.probeConnected = false;
-        realState.subsystems = [];
-        renderDiagnosis();
-        log("Type-C Serial telemetry port disconnected.");
+        resetSerialProbeTelemetry("Bluetooth / Serial probe disconnected — rail readings cleared.");
       });
     }
 
-    // Boot
-    scanRealHardware("Boot", false);
+    // Boot cleanly in standby with ZERO readings
+    resetTypeCTelemetry("System ready. Plug in Type-C cable and press '🎹 Scan & Sync PCB', or press '🔌 Hardware Probe (WebSerial)' for Bluetooth.");
   </script>
 </body>
 </html>
